@@ -1,0 +1,307 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  CUSTOMER
+  BILLING
+}
+
+enum AccountProvider {
+  GITHUB
+  GOOGLE
+}
+
+enum SubscriptionType {
+  FREE
+  BASIC
+  PRO
+}
+
+enum TokenType {
+  PASSWORD_RECOVER
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  BOLETO
+}
+
+// Models
+model User {
+  id           String           @id @default(uuid())
+  name         String?
+  email        String           @unique
+  passwordHash String?          @map("password_hash")
+  avatarUrl    String?          @map("avatar_url")
+  birthday     DateTime?
+  subscription SubscriptionType @default(FREE)
+
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  preferredGateway String?
+
+  tokens             Token[]
+  accounts           Account[]
+  invites            Invite[]
+  member_on          Member[]
+  owns_organizations Organization[]
+  subscriptions      Subscription[]
+  payments           Payment[]
+
+  @@map("users")
+}
+
+model Token {
+  id        String    @id @default(uuid())
+  type      TokenType
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  @@map("tokens")
+}
+
+model Account {
+  id                String          @id @default(uuid())
+  provider          AccountProvider
+  providerAccountId String          @unique @map("provider_account_id")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  @@unique([provider, userId])
+  @@map("accounts")
+}
+
+model Invite {
+  id        String   @id @default(uuid())
+  email     String
+  role      Role
+  createdAt DateTime @default(now()) @map("created_at")
+
+  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId String? @map("author_id")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  @@unique([email, organizationId])
+  @@index([email])
+  @@map("invites")
+}
+
+model Member {
+  id   String @id @default(uuid())
+  role Role   @default(MEMBER)
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  @@unique([organizationId, userId])
+  @@map("members")
+}
+
+model Organization {
+  id                        String   @id @default(uuid())
+  name                      String
+  slug                      String   @unique
+  domain                    String?  @unique
+  shouldAttachUsersByDomain Boolean  @default(false) @map("should_attach_users_by_domain")
+  avatarUrl                 String?  @map("avatar_url")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String @map("owner_id")
+
+  invites             Invite[]
+  members             Member[]
+  integrations        Integration[]
+  gatewayTransactions GatewayTransaction[]
+  products            Product[]
+  notifications       Notification[]
+  gatewayConfigs      GatewayConfig[]
+  checkouts           Checkout[]
+  invoices            Invoice[]
+  payments            Payment[]
+  subscriptions       Subscription[]
+
+  @@index([slug])
+  @@map("organizations")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  currency    String
+  imageUrls   String[] @map("image_urls")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  gatewayTransactions GatewayTransaction[]
+  checkout            Checkout?            @relation(fields: [checkoutId], references: [id], onDelete: SetNull)
+  checkoutId          String?
+
+  @@map("products")
+}
+
+model GatewayConfig {
+  id             String   @id @default(uuid())
+  provider       String // Nome do provedor do gateway (ex.: Stripe, Órbita)
+  description    String? // Descrição do gateway
+  apiKey         String   @map("api_key")
+  secretKey      String   @map("secret_key")
+  publicKey      String?  @map("public_key") // Chave pública opcional
+  webhookSecret  String?  @map("webhook_secret") // Segredo do webhook opcional
+  installmentFee Float? // Taxa de parcelamento em porcentagem (opcional)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  gatewayTransactions GatewayTransaction[]
+
+  @@unique([provider, organizationId]) // Garante unicidade do provedor por organização
+  @@map("gateway_configs")
+}
+
+model GatewayTransaction {
+  id        String            @id @default(uuid())
+  amount    Float
+  currency  String
+  status    TransactionStatus @default(PENDING)
+  method    PaymentMethod
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId String?  @map("product_id")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  gatewayConfig   GatewayConfig @relation(fields: [gatewayConfigId], references: [id], onDelete: Cascade)
+  gatewayConfigId String        @map("gateway_config_id")
+  checkout        Checkout?     @relation(fields: [checkoutId], references: [id], onDelete: SetNull)
+  checkoutId      String?
+
+  @@map("gateway_transactions")
+}
+
+model Checkout {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  customCss   String?
+  customHtml  String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  products            Product[]
+  gatewayTransactions GatewayTransaction[]
+
+  @@map("checkouts")
+}
+
+model Integration {
+  id        String   @id @default(uuid())
+  name      String
+  config    Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  @@unique([name, organizationId])
+  @@map("integrations")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  @@index([organizationId])
+  @@map("notifications")
+}
+
+model Payment {
+  id        String            @id @default(uuid())
+  amount    Float
+  currency  String
+  method    PaymentMethod
+  status    TransactionStatus @default(PENDING)
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String? @map("user_id")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?       @map("organization_id")
+
+  @@map("payments")
+}
+
+model Invoice {
+  id        String   @id @default(uuid())
+  amount    Float
+  currency  String
+  dueDate   DateTime
+  isPaid    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?       @map("organization_id")
+
+  @@map("invoices")
+}
+
+model Subscription {
+  id        String           @id @default(uuid())
+  type      SubscriptionType @default(FREE)
+  startDate DateTime
+  endDate   DateTime?
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?
+
+  @@map("subscriptions")
+}
