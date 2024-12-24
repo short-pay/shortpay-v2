@@ -5,8 +5,8 @@ import { z } from 'zod'
 import { auth } from '@/http/middlewares/auth'
 import { prisma } from '@/lib/prisma'
 
-import { UnauthorizedError } from '@/http/_errors/unauthorized-error'
 import { BadRequestError } from '@/http/_errors/bad-request-error'
+import { ensureIsAdminOrOwner } from '@/utils/permissions'
 
 export async function revokeInvite(app: FastifyInstance) {
   app
@@ -31,14 +31,9 @@ export async function revokeInvite(app: FastifyInstance) {
       async (request, reply) => {
         const { slug, inviteId } = request.params
         const userId = await request.getCurrentUserId()
-        const { organization, membership } =
-          await request.getUserMembership(slug)
+        const { organization } = await request.getUserMembership(slug)
 
-        const { cannot } = getUserPermissions(userId, membership.role)
-
-        if (cannot('delete', 'Invite')) {
-          throw new UnauthorizedError(`You're not allowed to delete an invite.`)
-        }
+        await ensureIsAdminOrOwner(userId, organization.id)
 
         const invite = await prisma.invite.findUnique({
           where: {

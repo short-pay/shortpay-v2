@@ -44,6 +44,7 @@ enum PaymentMethod {
 }
 
 // Models
+
 model User {
   id           String           @id @default(uuid())
   name         String?
@@ -123,14 +124,16 @@ model Member {
 }
 
 model Organization {
-  id                        String   @id @default(uuid())
+  id                        String  @id @default(uuid())
   name                      String
-  slug                      String   @unique
-  domain                    String?  @unique
-  shouldAttachUsersByDomain Boolean  @default(false) @map("should_attach_users_by_domain")
-  avatarUrl                 String?  @map("avatar_url")
-  createdAt                 DateTime @default(now()) @map("created_at")
-  updatedAt                 DateTime @updatedAt @map("updated_at")
+  slug                      String  @unique
+  domain                    String? @unique
+  shouldAttachUsersByDomain Boolean @default(false) @map("should_attach_users_by_domain")
+  currency                  String  @default("BRL")
+
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId String @map("owner_id")
@@ -173,13 +176,13 @@ model Product {
 
 model GatewayConfig {
   id             String   @id @default(uuid())
-  provider       String // Nome do provedor do gateway (ex.: Stripe, Órbita)
-  description    String? // Descrição do gateway
+  provider       String // Provedor do gateway (ex.: Stripe, Órbita)
+  description    String?
   apiKey         String   @map("api_key")
   secretKey      String   @map("secret_key")
-  publicKey      String?  @map("public_key") // Chave pública opcional
-  webhookSecret  String?  @map("webhook_secret") // Segredo do webhook opcional
-  installmentFee Float? // Taxa de parcelamento em porcentagem (opcional)
+  publicKey      String?  @map("public_key")
+  webhookSecret  String?  @map("webhook_secret")
+  installmentFee Float?
   createdAt      DateTime @default(now()) @map("created_at")
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -192,12 +195,15 @@ model GatewayConfig {
 }
 
 model GatewayTransaction {
-  id        String            @id @default(uuid())
+  id            String  @id @default(uuid())
+  transactionId String?
+
   amount    Float
   currency  String
-  status    TransactionStatus @default(PENDING)
+  status    String        @default("PENDING")
   method    PaymentMethod
-  createdAt DateTime          @default(now()) @map("created_at")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @default(now()) @updatedAt @map("updated_at")
 
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   productId String?  @map("product_id")
@@ -214,13 +220,19 @@ model GatewayTransaction {
 }
 
 model Checkout {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  customCss   String?
-  customHtml  String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              String  @id @default(uuid())
+  name            String
+  description     String?
+  customCss       String? @map("custom_css")
+  customHtml      String? @map("custom_html")
+  theme           String  @default("default")
+  gatewayProvider String?
+  orderBump       Boolean @default(false)
+  currency        String // Moeda de venda
+  convertedAmount Float? // Valor convertido na moeda da organização
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @map("organization_id")

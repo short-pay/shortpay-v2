@@ -8,7 +8,6 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 import { authenticateWithPassword } from './http/routes/auth/authenticate-with-password'
-import { rawBodyPlugin } from './utils/plugins/raw-body.plugin'
 import { createAccount } from './http/routes/auth/create-account'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
@@ -33,11 +32,18 @@ import { UpdateIntegrationToGateway } from './http/routes/gateways/update-integr
 import { createTransaction } from './http/routes/transactions/create-transaction'
 import { requestPasswordRecover } from './http/routes/auth/request-password-recover'
 import { resetPassword } from './http/routes/auth/reset-password'
+import { fastifyRawBody } from 'fastify-raw-body'
+import { createCheckout } from './http/routes/checkouts/create-checkout'
+import { postbackTransaction } from './http/routes/webhooks/postback-transaction'
+import { getIntegrationsToGateways } from './http/routes/gateways/get-integrations-to-gateways'
+import { getCheckout } from './http/routes/checkouts/get-checkout'
+import { listCheckouts } from './http/routes/checkouts/list-checkouts'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
 // Plugins
-app.register(rawBodyPlugin)
+app.register(fastifyRawBody, { field: 'rawBody', runFirst: true })
+
 app.register(fastifyJwt, {
   secret: env.JWT_SECRET,
 })
@@ -90,6 +96,7 @@ app.register(getMembership)
 app.register(CreateIntegrationToGateway)
 app.register(DeleteIntegrationToCheckout)
 app.register(UpdateIntegrationToGateway)
+app.register(getIntegrationsToGateways)
 
 // Products
 app.register(createProduct)
@@ -115,5 +122,11 @@ app.register(updateProduct)
 // Transactions
 app.register(createTransaction)
 
+// Checkouts
+app.register(createCheckout)
+app.register(listCheckouts)
+app.register(getCheckout)
+
+app.register(postbackTransaction)
 // Billing
 // app.register(getOrganizationBilling)

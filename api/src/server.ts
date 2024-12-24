@@ -2,7 +2,10 @@ import { app } from '@/app'
 import { env } from '@/env'
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {
-  console.log(
-    `🚀 HTTP Server is Running on http://${env.HOST || 'localhost'}:${env.PORT}/docs`,
-  )
+  const baseHost =
+    env.NODE_ENV === 'dev' ? `http://localhost:${env.PORT}` : `${env.HOST}`
+
+  console.log('🚀 HTTP Server is Running:')
+  console.log(`- API: ${baseHost}/`)
+  console.log(`- Swagger: ${baseHost}/docs`)
 })

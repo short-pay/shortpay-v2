@@ -22,23 +22,29 @@ export async function CreateIntegrationToGateway(app: FastifyInstance) {
             slug: z.string(),
           }),
           body: z.object({
-            provider: z.string(), // Nome do provedor (ex.: Stripe, Órbita)
-            description: z.string().optional(), // Descrição opcional
-            apiKey: z.string().default('x'), // Chave API
-            secretKey: z.string(), // Chave secreta
-            publicKey: z.string().nullable(), // Chave pública opcional
-            webhookSecret: z.string().nullable(), // Segredo do webhook opcional
-            installmentFee: z.number().min(0).max(100).optional(), // Taxa de parcelamento (0-100%)
+            provider: z.string().min(1, 'Provider is required'),
+            description: z.string().optional(),
+            apiKey: z.string().min(1, 'API key is required'),
+            secretKey: z.string().min(1, 'Secret key is required'),
+            publicKey: z.string().nullable(),
+            webhookSecret: z.string().nullable(),
+            installmentFee: z.number().min(0).max(100).optional(),
           }),
           response: {
             201: z.object({
               id: z.string().uuid(),
               provider: z.string(),
             }),
+            500: z.object({
+              message: z.string(),
+            }),
           },
         },
       },
       async (request, reply) => {
+        console.log('🔍 Request Params:', request.params)
+        console.log('🔍 Request Body:', request.body)
+
         const {
           provider,
           description,
@@ -52,43 +58,65 @@ export async function CreateIntegrationToGateway(app: FastifyInstance) {
         const { slug } = request.params
         const userId = await request.getCurrentUserId()
 
-        // Verifica se a organização existe
+        console.log('🆔 User ID:', userId)
+        console.log('🔑 Slug:', slug)
+
         const organization = await prisma.organization.findUnique({
           where: { slug },
         })
 
+        console.log('🏢 Found Organization:', organization)
+
         if (!organization) {
+          console.log('⚠️ Organization not found for slug:', slug)
           throw new NotFoundError('Organization not Found')
         }
 
-        // Verifica permissões do usuário
         await ensureIsAdminOrOwner(userId, organization.id)
 
-        // Criptografa informações sensíveis
+        // Encrypt sensitive data
         const encryptedApiKey = encrypt(apiKey)
         const encryptedSecretKey = encrypt(secretKey)
+        const encryptedPublicKey = publicKey ? encrypt(publicKey) : null
         const encryptedWebhookSecret = webhookSecret
           ? encrypt(webhookSecret)
           : null
 
-        // Cria o registro no banco de dados
-        const gateway = await prisma.gatewayConfig.create({
-          data: {
-            organizationId: organization.id,
-            provider,
-            description,
-            apiKey: encryptedApiKey,
-            secretKey: encryptedSecretKey,
-            publicKey,
-            webhookSecret: encryptedWebhookSecret,
-            installmentFee,
-          },
+        console.log('🔐 Encrypted Data:', {
+          apiKey: encryptedApiKey,
+          secretKey: encryptedSecretKey,
+          publicKey: encryptedPublicKey,
+          webhookSecret: encryptedWebhookSecret,
         })
 
-        return reply.status(201).send({
-          id: gateway.id,
-          provider: gateway.provider,
-        })
+        try {
+          console.log('📦 Preparing data to send to Prisma...')
+
+          const gateway = await prisma.gatewayConfig.create({
+            data: {
+              organizationId: organization.id,
+              provider,
+              description,
+              apiKey: encryptedApiKey,
+              secretKey: encryptedSecretKey,
+              publicKey: encryptedPublicKey,
+              webhookSecret: encryptedWebhookSecret,
+              installmentFee,
+            },
+          })
+          console.log('✅ Prisma Insert Success:', gateway)
+
+          return reply.status(201).send({
+            id: gateway.id,
+            provider: gateway.provider,
+          })
+        } catch (error) {
+          console.error('❌ Prisma Insert Error:', error)
+
+          return reply.status(500).send({
+            message: 'Failed to create GatewayConfig.',
+          })
+        }
       },
     )
 }

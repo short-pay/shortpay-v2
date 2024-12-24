@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { auth } from '@/http/middlewares/auth'
 import { prisma } from '@/lib/prisma'
 
-import { UnauthorizedError } from '@/http/_errors/unauthorized-error'
+import { ensureIsAdminOrOwner } from '@/utils/permissions'
 
 export async function removeMember(app: FastifyInstance) {
   app
@@ -30,17 +30,12 @@ export async function removeMember(app: FastifyInstance) {
       },
       async (request, reply) => {
         const { slug, memberId } = request.params
+
         const userId = await request.getCurrentUserId()
-        const { organization, membership } =
-          await request.getUserMembership(slug)
 
-        const { cannot } = getUserPermissions(userId, membership.role)
+        const { organization } = await request.getUserMembership(slug)
 
-        if (cannot('delete', 'User')) {
-          throw new UnauthorizedError(
-            `You're not allowed to remove this member from organization.`,
-          )
-        }
+        await ensureIsAdminOrOwner(userId, organization.id)
 
         await prisma.member.delete({
           where: {

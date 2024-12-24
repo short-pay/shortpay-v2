@@ -6,7 +6,8 @@ import { auth } from '@/http/middlewares/auth'
 import { prisma } from '@/lib/prisma'
 
 import { roleSchema } from '../orgs/get-organizations'
-import { UnauthorizedError } from '@/http/_errors/unauthorized-error'
+import { NotFoundError } from '@/http/_errors/not-found-error'
+import { ensureIsAdminOrOwner } from '@/utils/permissions'
 
 export async function getMembers(app: FastifyInstance) {
   app
@@ -40,17 +41,18 @@ export async function getMembers(app: FastifyInstance) {
       },
       async (request, reply) => {
         const { slug } = request.params
+
         const userId = await request.getCurrentUserId()
+
         const { organization, membership } =
           await request.getUserMembership(slug)
 
-        const { cannot } = getUserPermissions(userId, membership.role)
-
-        if (cannot('get', 'User')) {
-          throw new UnauthorizedError(
-            `You're not allowed to see organization members.`,
-          )
+        if (!organization) {
+          throw new NotFoundError('Organization not found.')
         }
+
+        // Garante que o usuário é OWNER ou ADMIN
+        await ensureIsAdminOrOwner(userId, organization.id)
 
         const members = await prisma.member.findMany({
           select: {

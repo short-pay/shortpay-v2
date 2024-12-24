@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 
 import { auth } from '@/http/middlewares/auth'
 import { roleSchema } from '../orgs/get-organizations'
-import { UnauthorizedError } from '@/http/_errors/unauthorized-error'
+import { ensureIsAdminOrOwner } from '@/utils/permissions'
 
 export async function updateMember(app: FastifyInstance) {
   app
@@ -34,20 +34,9 @@ export async function updateMember(app: FastifyInstance) {
       async (request, reply) => {
         const { slug, memberId } = request.params
         const userId = await request.getCurrentUserId()
-        const { organization, membership } =
-          await request.getUserMembership(slug)
+        const { organization } = await request.getUserMembership(slug)
 
-        const { cannot } = getUserPermissions(
-          userId,
-          membership.role,
-          organization.id,
-        )
-
-        if (cannot('update', 'User')) {
-          throw new UnauthorizedError(
-            `You're not allowed to update this member.`,
-          )
-        }
+        await ensureIsAdminOrOwner(userId, organization.id)
 
         const { role } = request.body
 

@@ -5,9 +5,8 @@ import { z } from 'zod'
 import { auth } from '@/http/middlewares/auth'
 import { prisma } from '@/lib/prisma'
 
-import { UnauthorizedError } from '@/http/_errors/unauthorized-error'
-
 import { roleSchema } from '../orgs/get-organizations'
+import { ensureIsAdminOrOwner } from '@/utils/permissions'
 
 export async function getInvites(app: FastifyInstance) {
   app
@@ -46,16 +45,10 @@ export async function getInvites(app: FastifyInstance) {
       async (request) => {
         const { slug } = request.params
         const userId = await request.getCurrentUserId()
-        const { organization, membership } =
-          await request.getUserMembership(slug)
+        const { organization } = await request.getUserMembership(slug)
 
-        const { cannot } = getUserPermissions(userId, membership.role)
-
-        if (cannot('get', 'Invite')) {
-          throw new UnauthorizedError(
-            `You're not allowed to get organization invites.`,
-          )
-        }
+        // Garante que o usuário é OWNER ou ADMIN
+        await ensureIsAdminOrOwner(userId, organization.id)
 
         const invites = await prisma.invite.findMany({
           where: {
