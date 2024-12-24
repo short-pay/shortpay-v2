@@ -1,4 +1,3 @@
-// src/routes/transactions.ts
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'

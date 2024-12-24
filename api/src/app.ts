@@ -127,6 +127,8 @@ app.register(createCheckout)
 app.register(listCheckouts)
 app.register(getCheckout)
 
+// Webhooks
 app.register(postbackTransaction)
+
 // Billing
 // app.register(getOrganizationBilling)
