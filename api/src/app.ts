@@ -35,14 +35,17 @@ import { resetPassword } from './http/routes/auth/reset-password'
 import { fastifyRawBody } from 'fastify-raw-body'
 import { createCheckout } from './http/routes/checkouts/create-checkout'
 import { postbackTransaction } from './http/routes/webhooks/postback-transaction'
-import { getIntegrationsToGateways } from './http/routes/gateways/get-integrations-to-gateways'
+import { GetIntegrationsToGateways } from './http/routes/gateways/get-integrations-to-gateways'
 import { getCheckout } from './http/routes/checkouts/get-checkout'
 import { listCheckouts } from './http/routes/checkouts/list-checkouts'
+import fastifyCors from '@fastify/cors'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
 // Plugins
 app.register(fastifyRawBody, { field: 'rawBody', runFirst: true })
+
+app.register(fastifyCors)
 
 app.register(fastifyJwt, {
   secret: env.JWT_SECRET,
@@ -96,7 +99,7 @@ app.register(getMembership)
 app.register(CreateIntegrationToGateway)
 app.register(DeleteIntegrationToCheckout)
 app.register(UpdateIntegrationToGateway)
-app.register(getIntegrationsToGateways)
+app.register(GetIntegrationsToGateways)
 
 // Products
 app.register(createProduct)

@@ -149,6 +149,7 @@ model Organization {
   invoices            Invoice[]
   payments            Payment[]
   subscriptions       Subscription[]
+  Funnel              Funnel[]
 
   @@index([slug])
   @@map("organizations")
@@ -220,27 +221,74 @@ model GatewayTransaction {
 }
 
 model Checkout {
-  id              String  @id @default(uuid())
-  name            String
-  description     String?
-  customCss       String? @map("custom_css")
-  customHtml      String? @map("custom_html")
-  theme           String  @default("default")
-  gatewayProvider String?
-  orderBump       Boolean @default(false)
-  currency        String // Moeda de venda
-  convertedAmount Float? // Valor convertido na moeda da organização
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  content      Json     @default("{}")
+  previewImage String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @map("organization_id")
 
-  products            Product[]
-  gatewayTransactions GatewayTransaction[]
+  funnel             Funnel?              @relation(fields: [funnelId], references: [id], onDelete: SetNull)
+  funnelId           String?
+  multiStepPages     FunnelPage[] // Mais claro para representar páginas de checkout multi-etapas
+  Product            Product[]
+  GatewayTransaction GatewayTransaction[]
+}
 
-  @@map("checkouts")
+model Funnel {
+  id             String       @id @default(uuid())
+  name           String // Nome do funil
+  description    String? // Descrição
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  pages     FunnelPage[] // Relacionamento com páginas do funil
+  checkouts Checkout[] // Checkouts associados ao funil
+
+  @@map("funnels")
+}
+
+enum FunnelPageType {
+  GENERIC
+  CHECKOUT
+  LANDING_PAGE
+  THANK_YOU
+}
+
+model FunnelPage {
+  id           String         @id @default(uuid())
+  name         String
+  path         String         @unique
+  content      Json           @default("{}")
+  type         FunnelPageType @default(GENERIC) // Enum para tipos de páginas
+  previewImage String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  funnel     Funnel?   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  funnelId   String?   @map("funnel_id")
+  Checkout   Checkout? @relation(fields: [checkoutId], references: [id])
+  checkoutId String?
+
+  @@map("funnelPages")
+}
+
+model Template {
+  id           String   @id @default(uuid())
+  name         String // Nome do template
+  description  String?
+  content      Json     @default("{}") // Layout do template
+  previewImage String? // Imagem de pré-visualização
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("templetes")
 }
 
 model Integration {
@@ -261,12 +309,14 @@ model Notification {
   type      String
   message   String
   isRead    Boolean  @default(false)
+  funnelId  String?
   createdAt DateTime @default(now()) @map("created_at")
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @map("organization_id")
 
   @@index([organizationId])
+  @@index([funnelId]) // Index para buscas rápidas por funis
   @@map("notifications")
 }
 
