@@ -10,11 +10,14 @@ export async function createFunnel(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .post(
-      '/funnels',
+      '/funnels/:slug',
       {
         schema: {
           tags: ['Funnels'],
           summary: 'Create a new funnel',
+          params: z.object({
+            slug: z.string(),
+          }),
           body: z.object({
             name: z.string().min(1, 'Name is required'),
             description: z.string().optional(),
@@ -44,11 +47,11 @@ export async function createFunnel(app: FastifyInstance) {
         },
       },
       async (request, reply) => {
-        const { name, description, organizationId, pages } = request.body
+        const { slug } = request.params
 
-        const organization = await prisma.organization.findUnique({
-          where: { id: organizationId },
-        })
+        const { organization } = await request.getUserMembership(slug)
+
+        const { name, description, organizationId, pages } = request.body
 
         if (!organization) {
           throw new NotFoundError('Organization not found.')

@@ -267,7 +267,8 @@ model Funnel {
   name          String
   description   String?
   subDomainName String? @unique
-  published     Boolean @default(false) // Indica se o funil está publicado
+  published     Boolean @default(false)
+  liveProducts  String?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -293,6 +294,8 @@ model FunnelPage {
   id           String         @id @default(uuid())
   name         String
   path         String         @unique
+  pathName     String?
+  order        Int?
   type         FunnelPageType @default(GENERIC) // Enum para tipos de páginas
   content      Json           @default("{}")
   previewImage String?
