@@ -24,12 +24,13 @@ export async function listCheckouts(app: FastifyInstance) {
                 id: z.string(),
                 name: z.string(),
                 description: z.string().nullable(),
-                theme: z.string(),
-                orderBump: z.boolean(),
+                content: z.any(), // Ajustado para aceitar `JsonValue`
                 currency: z.string(),
                 convertedAmount: z.number().nullable(),
                 createdAt: z.string(),
                 updatedAt: z.string(),
+                previewImage: z.string().nullable(),
+                published: z.boolean(),
               }),
             ),
             404: z.object({
@@ -41,7 +42,6 @@ export async function listCheckouts(app: FastifyInstance) {
       async (request, reply) => {
         const { slug } = request.params
 
-        // Verifica se a organização existe pelo slug
         const organization = await prisma.organization.findUnique({
           where: { slug },
         })
@@ -50,13 +50,11 @@ export async function listCheckouts(app: FastifyInstance) {
           return reply.status(404).send({ message: 'Organization not found.' })
         }
 
-        // Busca todos os checkouts da organização
         const checkouts = await prisma.checkout.findMany({
           where: { organizationId: organization.id },
           orderBy: { createdAt: 'desc' },
         })
 
-        // Transforma os campos de data em strings
         const formattedCheckouts = checkouts.map((checkout) => ({
           ...checkout,
           createdAt: checkout.createdAt.toISOString(),

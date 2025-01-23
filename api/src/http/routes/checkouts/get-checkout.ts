@@ -24,13 +24,12 @@ export async function getCheckout(app: FastifyInstance) {
               id: z.string(),
               name: z.string(),
               description: z.string().nullable(),
-              theme: z.string(),
-              orderBump: z.boolean(),
+              content: z.any(),
               currency: z.string(),
               convertedAmount: z.number().nullable(),
-              organizationId: z.string(),
               createdAt: z.coerce.date(),
               updatedAt: z.coerce.date(),
+              published: z.boolean(),
             }),
             404: z.object({
               message: z.string(),
@@ -43,9 +42,6 @@ export async function getCheckout(app: FastifyInstance) {
 
         const checkout = await prisma.checkout.findUnique({
           where: { id },
-          include: {
-            organization: true,
-          },
         })
 
         if (!checkout) {
