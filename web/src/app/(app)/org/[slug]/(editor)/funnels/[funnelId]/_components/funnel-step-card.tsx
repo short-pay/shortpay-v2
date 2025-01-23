@@ -1,36 +1,33 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { FunnelPage } from '@prisma/client'
-import { ArrowDown, Mail } from 'lucide-react'
+'use client'
+
 import React from 'react'
 import { Draggable } from 'react-beautiful-dnd'
+import { Card, CardContent } from '@/components/ui/card'
+import { ArrowDown, Mail } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
-type Props = {
+interface FunnelPage {
+  id: string
+  name: string
+  path: string
+}
+
+interface FunnelStepCardProps {
   funnelPage: FunnelPage
   index: number
   activePage: boolean
 }
 
-const FunnelStepCard = ({ activePage, funnelPage, index }: Props) => {
-  let portal = document.getElementById('blur-page')
+const FunnelStepCard: React.FC<FunnelStepCardProps> = ({
+  activePage,
+  funnelPage,
+  index,
+}) => {
+  const portal = document.getElementById('blur-page')
 
   return (
-    <Draggable
-      draggableId={funnelPage.id.toString()}
-      index={index}
-    >
+    <Draggable draggableId={funnelPage.id} index={index}>
       {(provided, snapshot) => {
-        if (snapshot.isDragging) {
-          const offset = { x: 300 }
-          //@ts-ignore
-          const x = provided.draggableProps.style?.left - offset.x
-          //@ts-ignore
-          provided.draggableProps.style = {
-            ...provided.draggableProps.style,
-            //@ts-ignore
-            left: x,
-          }
-        }
         const component = (
           <Card
             className="p-0 relative cursor-grab my-2"

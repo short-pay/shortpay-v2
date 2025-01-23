@@ -1,10 +1,7 @@
+'use client'
+
 import React from 'react'
-
-import { Funnel, SubAccount } from '@prisma/client'
-import { db } from '@/lib/db'
-import { getConnectAccountProducts } from '@/lib/stripe/stripe-actions'
-
-import FunnelForm from '@/components/forms/funnel-form'
+import { FunnelForm } from '@/components/forms/funnel-form'
 import {
   Card,
   CardContent,
@@ -13,57 +10,66 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import FunnelProductsTable from './funnel-products-table'
+import { getProducts } from '@/http/products/get-products'
 
 interface FunnelSettingsProps {
-  subaccountId: string
-  defaultData: Funnel
+  slug: string
+  defaultData: {
+    id: string
+    name: string
+    description: string | null
+    liveProducts: string
+    slug: string
+  }
 }
 
-const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
-  subaccountId,
-  defaultData,
-}) => {
-  // CHALLENGE: go connect your stripe to sell products
+export default class FunnelSettings extends React.Component<FunnelSettingsProps> {
+  constructor(props: FunnelSettingsProps) {
+    super(props)
+    this.state = {
+      products: [],
+      isLoading: true,
+    }
+  }
 
-  const subaccountDetails = await db.subAccount.findUnique({
-    where: {
-      id: subaccountId,
-    },
-  })
+  async componentDidMount() {
+    const { slug } = this.props
+    const { products } = await getProducts({ org: slug })
+    this.setState({ products, isLoading: false })
+  }
 
-  if (!subaccountDetails) return
-  if (!subaccountDetails.connectAccountId) return
-  const products = await getConnectAccountProducts(
-    subaccountDetails.connectAccountId,
-  )
+  render() {
+    const { defaultData } = this.props
+    const { products, isLoading } = this.state as { products: any[]; isLoading: boolean }
 
-  return (
-    <div className="flex gap-4 flex-col xl:!flex-row">
-      <Card className="flex-1 flex-shrink">
-        <CardHeader>
-          <CardTitle>Funnel Products</CardTitle>
-          <CardDescription>
-            Select the products and services you wish to sell on this funnel.
-            You can sell one time and recurring products too.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <>
-            {subaccountDetails.connectAccountId ? (
-              <FunnelProductsTable
-                defaultData={defaultData}
-                products={products}
-              />
+    return (
+      <div className="flex gap-4 flex-col xl:!flex-row">
+        <Card className="flex-1 flex-shrink">
+          <CardHeader>
+            <CardTitle>Funnel Products</CardTitle>
+            <CardDescription>
+              Select the products and services you wish to sell on this funnel.
+              You can sell one-time and recurring products too.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <p>Loading products...</p>
+            ) : products && products.length > 0 ? (
+              <FunnelProductsTable defaultData={defaultData} products={products} />
             ) : (
-              'Connect your stripe account to sell products.'
+              'No products found. Add products to start selling.'
             )}
-          </>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <FunnelForm subAccountId={subaccountId} defaultData={defaultData} />
-    </div>
-  )
+        <FunnelForm
+  isUpdating={true}
+  initialData={{
+    ...defaultData,
+    description: defaultData.description || undefined,
+  }}
+/>      </div>
+    )
+  }
 }
-
-export default FunnelSettings

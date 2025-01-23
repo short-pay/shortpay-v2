@@ -1,33 +1,88 @@
-import React from 'react'
-import FunnelsDataTable from './data-table'
-import { Plus } from 'lucide-react'
-import { columns } from './columns'
-import FunnelForm from '@/components/forms/funnel-form'
-import BlurPage from '@/components/global/blur-page'
-import { funnels } from '@/utils/db'
+'use client'
 
-const Funnels = async ({ params }: { params: { subaccountId: string } }) => {
-  // const funnels = await getFunnels(params.subaccountId)
-  // if (!funnels) return null
+import { useQuery } from '@tanstack/react-query'
+import { Loader2 } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+
+import { FunnelsPagination } from './funnels-pagination'
+import { FunnelItemActions } from './funnel-item-actions'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { getFunnels } from '@/http/funnels/get-funnels'
+
+export default function FunnelsPage() {
+  const searchParams = useSearchParams()
+  const page = parseInt(searchParams.get('page') || '1', 10)
+  const size = parseInt(searchParams.get('size') || '10', 10)
+  const searchTerm = searchParams.get('searchTerm') || ''
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['funnels', page, size, searchTerm],
+    queryFn: () =>
+      getFunnels({ slug: 'current-org-slug', page, size, searchTerm }),
+  })
 
   return (
-    <BlurPage>
-      <FunnelsDataTable
-        actionButtonText={
-          <>
-            <Plus size={15} />
-            Create Funnel
-          </>
-        }
-        modalChildren={
-          <FunnelForm subAccountId={params.subaccountId}></FunnelForm>
-        }
-        filterValue="name"
-        columns={columns}
-        data={funnels}
-      />
-    </BlurPage>
+    <>
+      <div className="rounded-md border">
+        {isLoading ? (
+          <div className="flex h-24 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data?.funnels?.length && data?.funnels.length > 0 ? (
+                data?.funnels.map((funnel) => (
+                  <TableRow key={funnel.id}>
+                    <TableCell>{funnel.name}</TableCell>
+                    <TableCell>{funnel.description || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={funnel.published ? 'default' : 'secondary'}
+                      >
+                        {funnel.published ? 'Published' : 'Draft'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <FunnelItemActions funnelId={funnel.id} />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    No funnels found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+      <Suspense fallback={null}>
+        <FunnelsPagination
+          pageCount={data?.totalPages || 1}
+          pageIndex={page - 1}
+          pageSize={size}
+        />
+      </Suspense>
+    </>
   )
 }
-
-export default Funnels

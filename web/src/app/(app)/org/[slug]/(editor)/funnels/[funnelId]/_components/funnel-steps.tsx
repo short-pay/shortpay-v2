@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 import CreateFunnelPage from '@/components/forms/funnel-page'
 import CustomModal from '@/components/global/custom-modal'
@@ -6,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from '@/components/ui/use-toast'
 import { upsertFunnelPage } from '@/lib/queries'
-import { FunnelsForSubAccount } from '@/lib/types'
+
 import { useModal } from '@/providers/modal-provider'
-import { FunnelPage } from '@prisma/client'
+
 import { Check, ExternalLink, LucideEdit } from 'lucide-react'
 import React, { useState } from 'react'
 
@@ -28,9 +29,10 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import FunnelStepCard from './funnel-step-card'
+import type { Funnel, FunnelPage } from '@/@types/funnels'
 
 type Props = {
-  funnel: FunnelsForSubAccount
+  funnel: Funnel
   subaccountId: string
   pages: FunnelPage[]
   funnelId: string
@@ -38,12 +40,12 @@ type Props = {
 
 const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
   const [clickedPage, setClickedPage] = useState<FunnelPage | undefined>(
-    pages[0]
+    pages[0],
   )
   const { setOpen } = useModal()
   const [pagesState, setPagesState] = useState(pages)
   const onDragStart = (event: DragStart) => {
-    //current chosen page
+    // current chosen page
     const { draggableId } = event
     const value = pagesState.find((page) => page.id === draggableId)
   }
@@ -51,7 +53,7 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
   const onDragEnd = (dropResult: DropResult) => {
     const { destination, source } = dropResult
 
-    //no destination or same position
+    // no destination or same position
     if (
       !destination ||
       (destination.droppableId === source.droppableId &&
@@ -59,7 +61,7 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
     ) {
       return
     }
-    //change state
+    // change state
     const newPageOrder = [...pagesState]
       .toSpliced(source.index, 1)
       .toSpliced(destination.index, 0, pagesState[source.index])
@@ -77,7 +79,7 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
             order: index,
             name: page.name,
           },
-          funnelId
+          funnelId,
         )
       } catch (error) {
         console.log(error)
@@ -86,7 +88,6 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
           title: 'Failed',
           description: 'Could not save page order',
         })
-        return
       }
     })
 
@@ -106,20 +107,14 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
               Funnel Steps
             </div>
             {pagesState.length ? (
-              <DragDropContext
-                onDragEnd={onDragEnd}
-                onDragStart={onDragStart}
-              >
+              <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
                 <Droppable
                   droppableId="funnels"
                   direction="vertical"
                   key="funnels"
                 >
                   {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                    >
+                    <div {...provided.droppableProps} ref={provided.innerRef}>
                       {pagesState.map((page, idx) => (
                         <div
                           className="relative"
@@ -157,7 +152,7 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
                     funnelId={funnelId}
                     order={pagesState.length}
                   />
-                </CustomModal>
+                </CustomModal>,
               )
             }}
           >
@@ -165,7 +160,7 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
           </Button>
         </aside>
         <aside className="flex-[0.7] bg-muted p-4 ">
-          {!!pages.length ? (
+          {pages.length ? (
             <Card className="h-full flex justify-between flex-col">
               <CardHeader>
                 <p className="text-sm text-muted-foreground">Page name</p>

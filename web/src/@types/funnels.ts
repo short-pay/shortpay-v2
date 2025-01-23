@@ -12,6 +12,9 @@ export type FunnelPage = {
   name: string
   path: string
   type: FunnelPageType
+  pathName?: string
+  order?: number
+  published?: boolean
   content: Record<string, any> // JSON data
   previewImage?: string | null
   metadata?: Record<string, any> | null // JSON data for metadata
@@ -27,6 +30,7 @@ export type Funnel = {
   name: string
   description?: string | null
   subDomainName?: string | null
+  published?: boolean
   createdAt: string
   updatedAt: string
   organizationId: string

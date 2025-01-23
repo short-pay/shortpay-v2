@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 'use client'
+
 import React, { useState } from 'react'
 import {
   Table,
@@ -11,15 +12,30 @@ import {
 } from '@/components/ui/table'
 
 import Image from 'next/image'
-import {
-  saveActivityLogsNotification,
-  updateFunnelProducts,
-} from '@/lib/queries'
-
+import { updateFunnelProducts } from '@/http/funnels/update-funnel-products'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import type { FunnelProductsTableProps } from '@/@types/editor'
+
+interface Product {
+  id: string
+  name: string
+  images: string[]
+  default_price?: {
+    id: string
+    recurring?: boolean
+    unit_amount?: number
+  }
+}
+
+export interface FunnelProductsTableProps {
+  products: Product[]
+  defaultData: {
+    id: string
+    liveProducts: string
+    slug: string
+  }
+}
 
 const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
   products,
@@ -33,20 +49,15 @@ const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
 
   const handleSaveProducts = async () => {
     setIsLoading(true)
-    const response = await updateFunnelProducts(
-      JSON.stringify(liveProducts),
-      defaultData.id,
-    )
-    await saveActivityLogsNotification({
-      agencyId: undefined,
-      description: `Update funnel products | ${response.name}`,
-      subaccountId: defaultData.subAccountId,
+    await updateFunnelProducts({
+      funnelId: defaultData.id,
+      products: JSON.stringify(liveProducts),
     })
     setIsLoading(false)
     router.refresh()
   }
 
-  const handleAddProduct = (product: (typeof products)[number]) => {
+  const handleAddProduct = (product: Product) => {
     const productIdExists = liveProducts.find(
       (prod) => prod.productId === product.default_price?.id,
     )
