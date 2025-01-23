@@ -1,6 +1,5 @@
 'use client'
-import { PricesList, TicketDetails } from '@/lib/types'
-import { Agency, Contact, Plan, User } from '@prisma/client'
+
 import { createContext, useContext, useEffect, useState } from 'react'
 
 interface ModalProviderProps {
@@ -8,13 +7,13 @@ interface ModalProviderProps {
 }
 
 export type ModalData = {
-  user?: User
-  agency?: Agency
-  ticket?: TicketDetails[0]
-  contact?: Contact
+  user?: any
+  agency?: any
+  ticket?: any[0]
+  contact?: any
   plans?: {
-    defaultPriceId: Plan
-    plans: PricesList['data']
+    defaultPriceId: any
+    plans: any['data']
   }
 }
 type ModalContextType = {
@@ -43,7 +42,7 @@ const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
 
   const setOpen = async (
     modal: React.ReactNode,
-    fetchData?: () => Promise<any>
+    fetchData?: () => Promise<any>,
   ) => {
     if (modal) {
       if (fetchData) {

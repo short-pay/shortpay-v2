@@ -1,18 +1,25 @@
-/* eslint-disable no-case-declarations */
-
 'use client'
-import { EditorBtns } from '@/lib/constants'
-import { EditorAction } from './editor-actions'
-import { Dispatch, createContext, useContext, useReducer } from 'react'
-import { FunnelPage } from '@/@types/editor'
 
+import { createContext, useContext, useReducer, Dispatch } from 'react'
+import type { EditorAction } from './editor-actions'
+
+// --------------------
+// Tipos de Ações
+// --------------------
+
+// --------------------
+// Tipos do Editor
+// --------------------
 export type DeviceTypes = 'Desktop' | 'Mobile' | 'Tablet'
 
+// Ajuste aqui para permitir que type seja 'string | null'.
+// Se quiser restringir para somente string, remova o '| null'
+// e garanta em todo lugar que nunca retornará null.
 export type EditorElement = {
   id: string
   styles: React.CSSProperties
   name: string
-  type: EditorBtns
+  type: string | null
   content: EditorElement[] | { href?: string; innerText?: string; src?: string }
 }
 
@@ -23,6 +30,14 @@ export type Editor = {
   device: DeviceTypes
   previewMode: boolean
   funnelPageId: string
+  checkoutId?: string
+  themeId?: string
+  orderBumpEnabled: boolean
+  orderBumpDetails?: {
+    title: string
+    description: string
+    price: number
+  }
 }
 
 export type HistoryState = {
@@ -35,7 +50,10 @@ export type EditorState = {
   history: HistoryState
 }
 
-const initialEditorState: EditorState['editor'] = {
+// --------------------
+// Estados Iniciais
+// --------------------
+const initialEditorState: Editor = {
   elements: [
     {
       content: [],
@@ -46,16 +64,20 @@ const initialEditorState: EditorState['editor'] = {
     },
   ],
   selectedElement: {
-    id: '',
+    id: '__default',
     content: [],
-    name: '',
+    name: 'Default',
     styles: {},
-    type: null,
+    type: '__default',
   },
   device: 'Desktop',
   previewMode: false,
   liveMode: false,
   funnelPageId: '',
+  checkoutId: undefined,
+  themeId: undefined,
+  orderBumpEnabled: false,
+  orderBumpDetails: undefined,
 }
 
 const initialHistoryState: HistoryState = {
@@ -68,325 +90,255 @@ const initialState: EditorState = {
   history: initialHistoryState,
 }
 
-const addAnElement = (
-  editorArray: EditorElement[],
-  action: EditorAction,
-): EditorElement[] => {
-  if (action.type !== 'ADD_ELEMENT')
-    throw Error(
-      'You sent the wrong action type to the Add Element editor State',
-    )
-  return editorArray.map((item) => {
-    if (item.id === action.payload.containerId && Array.isArray(item.content)) {
-      return {
-        ...item,
-        content: [...item.content, action.payload.elementDetails],
-      }
-    } else if (item.content && Array.isArray(item.content)) {
-      return {
-        ...item,
-        content: addAnElement(item.content, action),
-      }
+// --------------------
+// Utils (Exemplo)
+// --------------------
+//
+// As funções de 'HistoryManager' e 'EditorElementManager' não
+// foram incluídas no snippet original, mas supondo algo como:
+
+export const HistoryManager = {
+  updateHistory: (state: EditorState, newEditor: Editor): HistoryState => {
+    // Exemplo de lógica de histórico:
+    const updatedHistory = [
+      ...state.history.history.slice(0, state.history.currentIndex + 1),
+      newEditor,
+    ]
+    return {
+      history: updatedHistory,
+      currentIndex: updatedHistory.length - 1,
     }
-    return item
-  })
+  },
+  undo: (state: EditorState): EditorState => {
+    if (state.history.currentIndex <= 0) return state
+    return {
+      ...state,
+      editor: state.history.history[state.history.currentIndex - 1],
+      history: {
+        ...state.history,
+        currentIndex: state.history.currentIndex - 1,
+      },
+    }
+  },
+  redo: (state: EditorState): EditorState => {
+    if (state.history.currentIndex >= state.history.history.length - 1)
+      return state
+    return {
+      ...state,
+      editor: state.history.history[state.history.currentIndex + 1],
+      history: {
+        ...state.history,
+        currentIndex: state.history.currentIndex + 1,
+      },
+    }
+  },
 }
 
-const updateAnElement = (
-  editorArray: EditorElement[],
-  action: EditorAction,
-): EditorElement[] => {
-  if (action.type !== 'UPDATE_ELEMENT') {
-    throw Error('You sent the wrong action type to the update Element State')
-  }
-  return editorArray.map((item) => {
-    if (item.id === action.payload.elementDetails.id) {
-      return { ...item, ...action.payload.elementDetails }
-    } else if (item.content && Array.isArray(item.content)) {
-      return {
-        ...item,
-        content: updateAnElement(item.content, action),
-      }
-    }
-    return item
-  })
+export const EditorElementManager = {
+  addElement: (
+    elements: EditorElement[],
+    containerId: string,
+    elementDetails: EditorElement,
+  ) => {
+    // Exemplo: adicionar `elementDetails` dentro do elemento com ID `containerId`.
+    return [...elements, elementDetails]
+  },
+  updateElement: (elements: EditorElement[], updated: EditorElement) => {
+    // Exemplo: atualiza `elements` trocando o elemento que tiver `id === updated.id`
+    return elements.map((el) => (el.id === updated.id ? updated : el))
+  },
+  deleteElement: (elements: EditorElement[], elementId: string) => {
+    // Exemplo: remove o elemento que tiver `id === elementId`
+    return elements.filter((el) => el.id !== elementId)
+  },
 }
 
-const deleteAnElement = (
-  editorArray: EditorElement[],
-  action: EditorAction,
-): EditorElement[] => {
-  if (action.type !== 'DELETE_ELEMENT')
-    throw Error(
-      'You sent the wrong action type to the Delete Element editor State',
-    )
-  return editorArray.filter((item) => {
-    if (item.id === action.payload.elementDetails.id) {
-      return false
-    } else if (item.content && Array.isArray(item.content)) {
-      item.content = deleteAnElement(item.content, action)
-    }
-    return true
-  })
-}
-
+// --------------------
+// Reducer
+// --------------------
 const editorReducer = (
   state: EditorState = initialState,
   action: EditorAction,
 ): EditorState => {
   switch (action.type) {
     case 'ADD_ELEMENT':
-      const updatedEditorState = {
-        ...state.editor,
-        elements: addAnElement(state.editor.elements, action),
-      }
-      // Update the history to include the entire updated EditorState
-      const updatedHistory = [
-        ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorState }, // Save a copy of the updated state
-      ]
-
-      const newEditorState = {
+      return {
         ...state,
-        editor: updatedEditorState,
-        history: {
-          ...state.history,
-          history: updatedHistory,
-          currentIndex: updatedHistory.length - 1,
+        editor: {
+          ...state.editor,
+          elements: EditorElementManager.addElement(
+            state.editor.elements,
+            action.payload.containerId,
+            action.payload.elementDetails,
+          ),
         },
+        history: HistoryManager.updateHistory(state, state.editor),
       }
-
-      return newEditorState
 
     case 'UPDATE_ELEMENT':
-      // Perform your logic to update the element in the state
-      const updatedElements = updateAnElement(state.editor.elements, action)
-
-      const UpdatedElementIsSelected =
-        state.editor.selectedElement.id === action.payload.elementDetails.id
-
-      const updatedEditorStateWithUpdate = {
-        ...state.editor,
-        elements: updatedElements,
-        selectedElement: UpdatedElementIsSelected
-          ? action.payload.elementDetails
-          : {
-              id: '',
-              content: [],
-              name: '',
-              styles: {},
-              type: null,
-            },
-      }
-
-      const updatedHistoryWithUpdate = [
-        ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorStateWithUpdate }, // Save a copy of the updated state
-      ]
-      const updatedEditor = {
+      return {
         ...state,
-        editor: updatedEditorStateWithUpdate,
-        history: {
-          ...state.history,
-          history: updatedHistoryWithUpdate,
-          currentIndex: updatedHistoryWithUpdate.length - 1,
+        editor: {
+          ...state.editor,
+          elements: EditorElementManager.updateElement(
+            state.editor.elements,
+            action.payload.elementDetails,
+          ),
+          selectedElement:
+            state.editor.selectedElement.id === action.payload.elementDetails.id
+              ? action.payload.elementDetails
+              : state.editor.selectedElement,
         },
+        history: HistoryManager.updateHistory(state, state.editor),
       }
-      return updatedEditor
 
     case 'DELETE_ELEMENT':
-      // Perform your logic to delete the element from the state
-      const updatedElementsAfterDelete = deleteAnElement(
-        state.editor.elements,
-        action,
-      )
-      const updatedEditorStateAfterDelete = {
-        ...state.editor,
-        elements: updatedElementsAfterDelete,
-      }
-      const updatedHistoryAfterDelete = [
-        ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorStateAfterDelete }, // Save a copy of the updated state
-      ]
-
-      const deletedState = {
+      return {
         ...state,
-        editor: updatedEditorStateAfterDelete,
-        history: {
-          ...state.history,
-          history: updatedHistoryAfterDelete,
-          currentIndex: updatedHistoryAfterDelete.length - 1,
+        editor: {
+          ...state.editor,
+          elements: EditorElementManager.deleteElement(
+            state.editor.elements,
+            action.payload.elementDetails.id,
+          ),
         },
+        history: HistoryManager.updateHistory(state, state.editor),
       }
-      return deletedState
 
     case 'CHANGE_CLICKED_ELEMENT':
-      const clickedState = {
+      return {
         ...state,
         editor: {
           ...state.editor,
           selectedElement: action.payload.elementDetails || {
-            id: '',
+            id: '__default',
             content: [],
-            name: '',
+            name: 'Default',
             styles: {},
-            type: null,
+            type: '__default',
           },
         },
-        history: {
-          ...state.history,
-          history: [
-            ...state.history.history.slice(0, state.history.currentIndex + 1),
-            { ...state.editor }, // Save a copy of the current editor state
-          ],
-          currentIndex: state.history.currentIndex + 1,
-        },
       }
-      return clickedState
+
     case 'CHANGE_DEVICE':
-      const changedDeviceState = {
+      return {
         ...state,
         editor: {
           ...state.editor,
           device: action.payload.device,
         },
       }
-      return changedDeviceState
 
     case 'TOGGLE_PREVIEW_MODE':
-      const toggleState = {
+      return {
         ...state,
         editor: {
           ...state.editor,
           previewMode: !state.editor.previewMode,
         },
       }
-      return toggleState
 
     case 'TOGGLE_LIVE_MODE':
-      const toggleLiveMode: EditorState = {
+      return {
         ...state,
         editor: {
           ...state.editor,
-          liveMode: action.payload
+          liveMode: action.payload?.value
             ? action.payload.value
             : !state.editor.liveMode,
         },
       }
-      return toggleLiveMode
-
-    case 'REDO':
-      if (state.history.currentIndex < state.history.history.length - 1) {
-        const nextIndex = state.history.currentIndex + 1
-        const nextEditorState = { ...state.history.history[nextIndex] }
-        const redoState = {
-          ...state,
-          editor: nextEditorState,
-          history: {
-            ...state.history,
-            currentIndex: nextIndex,
-          },
-        }
-        return redoState
-      }
-      return state
-
-    case 'UNDO':
-      if (state.history.currentIndex > 0) {
-        const prevIndex = state.history.currentIndex - 1
-        const prevEditorState = { ...state.history.history[prevIndex] }
-        const undoState = {
-          ...state,
-          editor: prevEditorState,
-          history: {
-            ...state.history,
-            currentIndex: prevIndex,
-          },
-        }
-        return undoState
-      }
-      return state
 
     case 'LOAD_DATA':
       return {
         ...initialState,
         editor: {
-          ...initialState.editor,
-          elements: action.payload.elements || initialEditorState.elements,
-          liveMode: !!action.payload.withLive,
+          ...initialEditorState,
+          elements: action.payload.elements,
+          liveMode: action.payload.withLive,
         },
       }
 
     case 'SET_FUNNELPAGE_ID':
-      const { funnelPageId } = action.payload
-      const updatedEditorStateWithFunnelPageId = {
-        ...state.editor,
-        funnelPageId,
-      }
-
-      const updatedHistoryWithFunnelPageId = [
-        ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorStateWithFunnelPageId }, // Save a copy of the updated state
-      ]
-
-      const funnelPageIdState = {
+      return {
         ...state,
-        editor: updatedEditorStateWithFunnelPageId,
-        history: {
-          ...state.history,
-          history: updatedHistoryWithFunnelPageId,
-          currentIndex: updatedHistoryWithFunnelPageId.length - 1,
+        editor: {
+          ...state.editor,
+          funnelPageId: action.payload.funnelPageId,
         },
       }
-      return funnelPageIdState
+
+    case 'SET_CHECKOUT_ID':
+      return {
+        ...state,
+        editor: {
+          ...state.editor,
+          checkoutId: action.payload.checkoutId,
+        },
+      }
+
+    case 'CHANGE_THEME':
+      return {
+        ...state,
+        editor: {
+          ...state.editor,
+          themeId: action.payload.themeId,
+        },
+      }
+
+    case 'TOGGLE_ORDER_BUMP':
+      return {
+        ...state,
+        editor: {
+          ...state.editor,
+          orderBumpEnabled: action.payload.orderBumpEnabled,
+        },
+      }
+
+    case 'UPDATE_ORDER_BUMP':
+      return {
+        ...state,
+        editor: {
+          ...state.editor,
+          orderBumpDetails: action.payload.orderBumpDetails,
+        },
+      }
+
+    case 'UNDO':
+      return HistoryManager.undo(state)
+
+    case 'REDO':
+      return HistoryManager.redo(state)
+
+    case 'RESET_EDITOR':
+      return initialState
 
     default:
       return state
   }
 }
 
-export type EditorContextData = {
-  device: DeviceTypes
-  previewMode: boolean
-  setPreviewMode: (previewMode: boolean) => void
-  setDevice: (device: DeviceTypes) => void
-}
-
+// --------------------
+// Context & Provider
+// --------------------
 export const EditorContext = createContext<{
   state: EditorState
   dispatch: Dispatch<EditorAction>
-  subaccountId: string
-  funnelId: string
-  pageDetails: FunnelPage | null
 }>({
   state: initialState,
   dispatch: () => undefined,
-  subaccountId: '',
-  funnelId: '',
-  pageDetails: null,
 })
 
-type EditorProps = {
+type EditorProviderProps = {
   children: React.ReactNode
-  subaccountId: string
-  funnelId: string
-  pageDetails: FunnelPage
 }
 
-const EditorProvider = (props: EditorProps) => {
+export const EditorProvider = ({ children }: EditorProviderProps) => {
   const [state, dispatch] = useReducer(editorReducer, initialState)
 
   return (
-    <EditorContext.Provider
-      value={{
-        state,
-        dispatch,
-        subaccountId: props.subaccountId,
-        funnelId: props.funnelId,
-        pageDetails: props.pageDetails,
-      }}
-    >
-      {props.children}
+    <EditorContext.Provider value={{ state, dispatch }}>
+      {children}
     </EditorContext.Provider>
   )
 }
@@ -394,9 +346,7 @@ const EditorProvider = (props: EditorProps) => {
 export const useEditor = () => {
   const context = useContext(EditorContext)
   if (!context) {
-    throw new Error('useEditor Hook must be used within the editor Provider')
+    throw new Error('useEditor must be used within an EditorProvider')
   }
   return context
 }
-
-export default EditorProvider

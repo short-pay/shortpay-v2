@@ -4,7 +4,6 @@ import { Funnel, SubAccount } from '@prisma/client'
 import { db } from '@/lib/db'
 import { getConnectAccountProducts } from '@/lib/stripe/stripe-actions'
 
-
 import FunnelForm from '@/components/forms/funnel-form'
 import {
   Card,
@@ -24,7 +23,7 @@ const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
   subaccountId,
   defaultData,
 }) => {
-  //CHALLENGE: go connect your stripe to sell products
+  // CHALLENGE: go connect your stripe to sell products
 
   const subaccountDetails = await db.subAccount.findUnique({
     where: {
@@ -35,7 +34,7 @@ const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
   if (!subaccountDetails) return
   if (!subaccountDetails.connectAccountId) return
   const products = await getConnectAccountProducts(
-    subaccountDetails.connectAccountId
+    subaccountDetails.connectAccountId,
   )
 
   return (
@@ -62,10 +61,7 @@ const FunnelSettings: React.FC<FunnelSettingsProps> = async ({
         </CardContent>
       </Card>
 
-      <FunnelForm
-        subAccountId={subaccountId}
-        defaultData={defaultData}
-      />
+      <FunnelForm subAccountId={subaccountId} defaultData={defaultData} />
     </div>
   )
 }

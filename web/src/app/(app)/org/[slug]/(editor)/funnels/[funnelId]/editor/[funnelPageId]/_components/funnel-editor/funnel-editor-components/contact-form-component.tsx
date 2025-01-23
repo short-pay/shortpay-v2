@@ -49,11 +49,11 @@ const ContactFormComponent = (props: Props) => {
     if (!funnelPages || !pageDetails) return
     if (funnelPages.FunnelPages.length > pageDetails.order + 1) {
       const nextPage = funnelPages.FunnelPages.find(
-        (page) => page.order === pageDetails.order + 1
+        (page) => page.order === pageDetails.order + 1,
       )
       if (!nextPage) return
       router.replace(
-        `${process.env.NEXT_PUBLIC_SCHEME}${funnelPages.subDomainName}.${process.env.NEXT_PUBLIC_DOMAIN}/${nextPage.pathName}`
+        `${process.env.NEXT_PUBLIC_SCHEME}${funnelPages.subDomainName}.${process.env.NEXT_PUBLIC_DOMAIN}/${nextPage.pathName}`,
       )
     }
   }
@@ -66,7 +66,7 @@ const ContactFormComponent = (props: Props) => {
   }
 
   const onFormSubmit = async (
-    values: z.infer<typeof ContactUserFormSchema>
+    values: z.infer<typeof ContactUserFormSchema>,
   ) => {
     if (!state.editor.liveMode) return
 
@@ -75,11 +75,11 @@ const ContactFormComponent = (props: Props) => {
         ...values,
         subAccountId: subaccountId,
       })
-      //WIP Call trigger endpoint
+      // WIP Call trigger endpoint
       await saveActivityLogsNotification({
         agencyId: undefined,
         description: `A New contact signed up | ${response?.name}`,
-        subaccountId: subaccountId,
+        subaccountId,
       })
       toast({
         title: 'Success',
@@ -109,7 +109,7 @@ const ContactFormComponent = (props: Props) => {
 
           '!border-solid': state.editor.selectedElement.id === props.element.id,
           'border-dashed border-[1px] border-slate-300': !state.editor.liveMode,
-        }
+        },
       )}
     >
       {state.editor.selectedElement.id === props.element.id &&

@@ -1,4 +1,5 @@
 'use client'
+
 import React from 'react'
 
 import {
@@ -8,7 +9,7 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Plus, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 
 import {
   Table,
@@ -72,7 +73,7 @@ export default function FunnelsDataTable<TData, TValue>({
                   subheading="Funnels are a like websites, but better! Try creating one!"
                 >
                   {modalChildren}
-                </CustomModal>
+                </CustomModal>,
               )
           }}
         >
@@ -91,7 +92,7 @@ export default function FunnelsDataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   )
@@ -110,7 +111,7 @@ export default function FunnelsDataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

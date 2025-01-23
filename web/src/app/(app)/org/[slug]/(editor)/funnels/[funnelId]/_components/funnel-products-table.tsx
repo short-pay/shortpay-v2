@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 'use client'
 import React, { useState } from 'react'
 import {
@@ -8,21 +9,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import Stripe from 'stripe'
+
 import Image from 'next/image'
 import {
   saveActivityLogsNotification,
   updateFunnelProducts,
 } from '@/lib/queries'
-import { Funnel } from '@prisma/client'
+
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-
-interface FunnelProductsTableProps {
-  defaultData: Funnel
-  products: Stripe.Product[]
-}
+import type { FunnelProductsTableProps } from '@/@types/editor'
 
 const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
   products,
@@ -31,14 +28,14 @@ const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [liveProducts, setLiveProducts] = useState<
-    { productId: string; recurring: boolean }[] | []
+    { productId: string; recurring: boolean }[]
   >(JSON.parse(defaultData.liveProducts || '[]'))
 
   const handleSaveProducts = async () => {
     setIsLoading(true)
     const response = await updateFunnelProducts(
       JSON.stringify(liveProducts),
-      defaultData.id
+      defaultData.id,
     )
     await saveActivityLogsNotification({
       agencyId: undefined,
@@ -49,31 +46,25 @@ const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
     router.refresh()
   }
 
-  const handleAddProduct = async (product: Stripe.Product) => {
+  const handleAddProduct = (product: (typeof products)[number]) => {
     const productIdExists = liveProducts.find(
-      //@ts-ignore
-      (prod) => prod.productId === product.default_price.id
+      (prod) => prod.productId === product.default_price?.id,
     )
     productIdExists
       ? setLiveProducts(
           liveProducts.filter(
-            (prod) =>
-              prod.productId !==
-              //@ts-ignore
-              product.default_price?.id
-          )
+            (prod) => prod.productId !== product.default_price?.id,
+          ),
         )
-      : //@ts-ignore
-        setLiveProducts([
+      : setLiveProducts([
           ...liveProducts,
           {
-            //@ts-ignore
-            productId: product.default_price.id as string,
-            //@ts-ignore
-            recurring: !!product.default_price.recurring,
+            productId: product.default_price?.id || '',
+            recurring: !!product.default_price?.recurring,
           },
         ])
   }
+
   return (
     <>
       <Table className="bg-card border-[1px] border-border rounded-md">
@@ -93,8 +84,7 @@ const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
                 <Input
                   defaultChecked={
                     !!liveProducts.find(
-                      //@ts-ignore
-                      (prod) => prod.productId === product.default_price.id
+                      (prod) => prod.productId === product.default_price?.id,
                     )
                   }
                   onChange={() => handleAddProduct(product)}
@@ -112,17 +102,13 @@ const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
               </TableCell>
               <TableCell>{product.name}</TableCell>
               <TableCell>
-                {
-                  //@ts-ignore
-                  product.default_price?.recurring ? 'Recurring' : 'One Time'
-                }
+                {product.default_price?.recurring ? 'Recurring' : 'One Time'}
               </TableCell>
               <TableCell className="text-right">
                 $
-                {
-                  //@ts-ignore
-                  product.default_price?.unit_amount / 100
-                }
+                {product.default_price?.unit_amount
+                  ? product.default_price.unit_amount / 100
+                  : 'N/A'}
               </TableCell>
             </TableRow>
           ))}

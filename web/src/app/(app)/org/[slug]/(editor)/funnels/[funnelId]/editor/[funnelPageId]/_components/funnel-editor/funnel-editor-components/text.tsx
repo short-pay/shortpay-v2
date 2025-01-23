@@ -30,7 +30,7 @@ const TextComponent = (props: Props) => {
     })
   }
 
-  //WE ARE NOT ADDING DRAG DROP
+  // WE ARE NOT ADDING DRAG DROP
   return (
     <div
       style={styles}
@@ -42,7 +42,7 @@ const TextComponent = (props: Props) => {
 
           '!border-solid': state.editor.selectedElement.id === props.element.id,
           'border-dashed border-[1px] border-slate-300': !state.editor.liveMode,
-        }
+        },
       )}
       onClick={handleOnClickBody}
     >

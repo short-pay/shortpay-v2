@@ -49,7 +49,7 @@ const VideoComponent = (props: Props) => {
             state.editor.selectedElement.id === props.element.id,
           '!border-solid': state.editor.selectedElement.id === props.element.id,
           'border-dashed border-[1px] border-slate-300': !state.editor.liveMode,
-        }
+        },
       )}
     >
       {state.editor.selectedElement.id === props.element.id &&

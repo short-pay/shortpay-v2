@@ -215,7 +215,7 @@ const Container = ({ element }: Props) => {
             block:
               state.editor.selectedElement.id === element.id &&
               !state.editor.liveMode,
-          }
+          },
         )}
       >
         {element.name}
@@ -223,20 +223,14 @@ const Container = ({ element }: Props) => {
 
       {Array.isArray(content) &&
         content.map((childElement) => (
-          <Recursive
-            key={childElement.id}
-            element={childElement}
-          />
+          <Recursive key={childElement.id} element={childElement} />
         ))}
 
       {state.editor.selectedElement.id === element.id &&
         !state.editor.liveMode &&
         state.editor.selectedElement.type !== '__body' && (
           <div className="absolute bg-primary px-2.5 py-1 text-xs font-bold  -top-[25px] -right-[1px] rounded-none rounded-t-lg ">
-            <Trash
-              size={16}
-              onClick={handleDeleteElement}
-            />
+            <Trash size={16} onClick={handleDeleteElement} />
           </div>
         )}
     </div>

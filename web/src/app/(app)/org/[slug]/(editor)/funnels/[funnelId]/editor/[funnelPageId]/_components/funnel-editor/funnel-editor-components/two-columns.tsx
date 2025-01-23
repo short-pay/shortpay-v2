@@ -119,10 +119,7 @@ const TwoColumns = (props: Props) => {
         )}
       {Array.isArray(content) &&
         content.map((childElement) => (
-          <RecursiveElement
-            key={childElement.id}
-            element={childElement}
-          />
+          <RecursiveElement key={childElement.id} element={childElement} />
         ))}
     </div>
   )
