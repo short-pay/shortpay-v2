@@ -9,7 +9,7 @@ export async function deleteFunnel(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .delete(
-      '/funnels/:id',
+      '/funnels/:id/delete',
       {
         schema: {
           tags: ['Funnels'],

@@ -41,6 +41,7 @@ import { listCheckouts } from './http/routes/checkouts/list-checkouts'
 import fastifyCors from '@fastify/cors'
 import { createFunnel } from './http/routes/funnels/create-funnel'
 import { getFunnels } from './http/routes/funnels/get-funnels'
+import { getFunnel } from './http/routes/funnels/get-funnel'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -134,7 +135,8 @@ app.register(getCheckout)
 
 // Funnels
 app.register(createFunnel)
-app.register(getFunnels)
+// app.register(getFunnels)
+app.register(getFunnel)
 
 // Webhooks
 app.register(postbackTransaction)

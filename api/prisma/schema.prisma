@@ -295,7 +295,7 @@ model FunnelPage {
   name         String
   path         String         @unique
   pathName     String?
-  order        Int?
+  order        Int
   type         FunnelPageType @default(GENERIC) // Enum para tipos de páginas
   content      Json           @default("{}")
   previewImage String?

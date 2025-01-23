@@ -63,13 +63,14 @@ export async function createFunnel(app: FastifyInstance) {
             description,
             organizationId,
             pages: {
-              create: pages.map((page) => ({
+              create: pages.map((page, index) => ({
                 name: page.name,
                 type: page.type,
                 content: page.content,
                 path: `${name.toLowerCase().replace(/\s+/g, '-')}-${page.name
                   .toLowerCase()
                   .replace(/\s+/g, '-')}`,
+                order: index + 1, // Define o order com base na posição da página no array
               })),
             },
           },

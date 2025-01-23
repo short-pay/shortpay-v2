@@ -10,7 +10,7 @@ export async function getFunnel(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .get(
-      '/funnels/:id',
+      '/funnels/:id/details',
       {
         schema: {
           tags: ['Funnels'],

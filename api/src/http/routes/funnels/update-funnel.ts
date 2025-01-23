@@ -9,7 +9,7 @@ export async function updateFunnel(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .put(
-      '/funnels/:id',
+      '/funnels/:id/update',
       {
         schema: {
           tags: ['Funnels'],
