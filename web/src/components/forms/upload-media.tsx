@@ -85,10 +85,7 @@ const UploadMediaForm = ({ subaccountId }: Props) => {
                 <FormItem className="flex-1">
                   <FormLabel>File Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Your agency name"
-                      {...field}
-                    />
+                    <Input placeholder="Your agency name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -112,10 +109,7 @@ const UploadMediaForm = ({ subaccountId }: Props) => {
                 </FormItem>
               )}
             />
-            <Button
-              type="submit"
-              className="mt-4"
-            >
+            <Button type="submit" className="mt-4">
               Upload Media
             </Button>
           </form>

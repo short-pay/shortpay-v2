@@ -55,7 +55,7 @@ const SendInvitation: React.FC<SendInvitationProps> = ({ agencyId }) => {
     try {
       const res = await sendInvitation(values.role, values.email, agencyId)
       await saveActivityLogsNotification({
-        agencyId: agencyId,
+        agencyId,
         description: `Invited ${res.email}`,
         subaccountId: undefined,
       })
@@ -97,10 +97,7 @@ const SendInvitation: React.FC<SendInvitationProps> = ({ agencyId }) => {
                 <FormItem className="flex-1">
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Email"
-                      {...field}
-                    />
+                    <Input placeholder="Email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,10 +133,7 @@ const SendInvitation: React.FC<SendInvitationProps> = ({ agencyId }) => {
                 </FormItem>
               )}
             />
-            <Button
-              disabled={form.formState.isSubmitting}
-              type="submit"
-            >
+            <Button disabled={form.formState.isSubmitting} type="submit">
               {form.formState.isSubmitting ? <Loading /> : 'Send Invitation'}
             </Button>
           </form>

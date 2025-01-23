@@ -38,11 +38,7 @@ const FileUpload = ({ apiEndpoint, onChange, value }: Props) => {
             </a>
           </div>
         )}
-        <Button
-          onClick={() => onChange('')}
-          variant="ghost"
-          type="button"
-        >
+        <Button onClick={() => onChange('')} variant="ghost" type="button">
           <X className="h-4 w-4" />
           Remove Logo
         </Button>

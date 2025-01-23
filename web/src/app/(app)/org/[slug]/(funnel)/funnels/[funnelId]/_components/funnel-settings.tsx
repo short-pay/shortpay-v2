@@ -18,7 +18,7 @@ interface FunnelSettingsProps {
     id: string
     name: string
     description: string | null
-    liveProducts: string
+    liveProducts?: string | null
     slug: string
   }
 }
@@ -40,7 +40,10 @@ export default class FunnelSettings extends React.Component<FunnelSettingsProps>
 
   render() {
     const { defaultData } = this.props
-    const { products, isLoading } = this.state as { products: any[]; isLoading: boolean }
+    const { products, isLoading } = this.state as {
+      products: any[]
+      isLoading: boolean
+    }
 
     return (
       <div className="flex gap-4 flex-col xl:!flex-row">
@@ -56,20 +59,27 @@ export default class FunnelSettings extends React.Component<FunnelSettingsProps>
             {isLoading ? (
               <p>Loading products...</p>
             ) : products && products.length > 0 ? (
-              <FunnelProductsTable defaultData={defaultData} products={products} />
+              <FunnelProductsTable
+                defaultData={{
+                  id: defaultData.id,
+                  liveProducts: defaultData.liveProducts || '', // Força um valor string
+                  slug: defaultData.slug,
+                }}
+                products={products}
+              />
             ) : (
               'No products found. Add products to start selling.'
             )}
           </CardContent>
         </Card>
-
         <FunnelForm
-  isUpdating={true}
-  initialData={{
-    ...defaultData,
-    description: defaultData.description || undefined,
-  }}
-/>      </div>
+          isUpdating={true}
+          initialData={{
+            ...defaultData,
+            description: defaultData.description || undefined,
+          }}
+        />
+      </div>
     )
   }
 }

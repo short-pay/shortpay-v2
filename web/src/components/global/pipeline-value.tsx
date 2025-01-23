@@ -43,7 +43,7 @@ const PipelineValue = ({ subaccountId }: Props) => {
           ?.Lane?.reduce((totalLanes, lane, currentLaneIndex, array) => {
             const laneTicketsTotal = lane.Tickets.reduce(
               (totalTickets, ticket) => totalTickets + Number(ticket?.value),
-              0
+              0,
             )
             if (currentLaneIndex === array.length - 1) {
               setPipelineClosedValue(laneTicketsTotal || 0)
@@ -59,7 +59,7 @@ const PipelineValue = ({ subaccountId }: Props) => {
   const pipelineRate = useMemo(
     () =>
       (pipelineClosedValue / (totalPipelineValue + pipelineClosedValue)) * 100,
-    [pipelineClosedValue, totalPipelineValue]
+    [pipelineClosedValue, totalPipelineValue],
   )
 
   return (
@@ -81,11 +81,7 @@ const PipelineValue = ({ subaccountId }: Props) => {
             </p>
           </div>
         </div>
-        <Progress
-          color="green"
-          value={pipelineRate}
-          className="h-2"
-        />
+        <Progress color="green" value={pipelineRate} className="h-2" />
       </CardHeader>
       <CardContent className="text-sm text-muted-foreground">
         <p className="mb-2">
@@ -103,10 +99,7 @@ const PipelineValue = ({ subaccountId }: Props) => {
             <SelectGroup>
               <SelectLabel>Pipelines</SelectLabel>
               {pipelines.map((pipeline) => (
-                <SelectItem
-                  value={pipeline.id}
-                  key={pipeline.id}
-                >
+                <SelectItem value={pipeline.id} key={pipeline.id}>
                   {pipeline.name}
                 </SelectItem>
               ))}

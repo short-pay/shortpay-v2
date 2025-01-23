@@ -8,7 +8,6 @@ interface UpdateFunnelProductsParams {
 export async function updateFunnelProducts({
   funnelId,
   products,
-
 }: UpdateFunnelProductsParams): Promise<{ id: string; liveProducts: string }> {
   const response = await api
     .put(`funnels/${funnelId}/update-products`, {

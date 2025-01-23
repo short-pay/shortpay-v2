@@ -3,5 +3,5 @@ export default function EditorLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <main className="mx-auto w-full py-4">{children}</main>
+  return <main className="mx-auto w-full max-w-[1200px] py-4">{children}</main>
 }

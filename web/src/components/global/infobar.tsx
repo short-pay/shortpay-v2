@@ -36,7 +36,7 @@ const InfoBar = ({ notifications, subAccountId, className, role }: Props) => {
       if (notifications?.length !== 0) {
         setAllNotifications(
           notifications?.filter((item) => item.subAccountId === subAccountId) ??
-            []
+            [],
         )
       }
     }
@@ -48,7 +48,7 @@ const InfoBar = ({ notifications, subAccountId, className, role }: Props) => {
       <div
         className={twMerge(
           'fixed z-[20] md:left-[300px] left-0 right-0 top-0 p-4 bg-background/80 backdrop-blur-md flex  gap-4 items-center border-b-[1px] ',
-          className
+          className,
         )}
       >
         <div className="flex items-center gap-2 ml-auto">

@@ -28,6 +28,7 @@ export type FunnelPage = {
 export type Funnel = {
   id: string
   name: string
+  type: 'GENERIC' | 'CHECKOUT' | 'LANDING_PAGE' | 'THANK_YOU'
   description?: string | null
   subDomainName?: string | null
   published?: boolean

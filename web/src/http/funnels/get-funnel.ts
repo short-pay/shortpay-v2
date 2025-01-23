@@ -1,19 +1,40 @@
+import type { Checkout } from '@/@types/checkout'
 import { api } from '../api-client'
+import type { Notification } from '@/@types/notifications'
 
 interface GetFunnelResponse {
-  id: string
-  name: string
-  description: string | null
-  pages: {
+  funnel: {
+    liveProducts: string
     id: string
     name: string
-    type: 'GENERIC' | 'CHECKOUT' | 'LANDING_PAGE' | 'THANK_YOU'
-    content: any
-    published: boolean
-  }[]
+    description: string | null
+    type: 'GENERIC' | 'CHECKOUT' | 'LANDING_PAGE' | 'THANK_YOU' // Adicionado
+    subDomainName: string | null
+    organizationId: string
+    createdAt: string
+    updatedAt: string
+    published?: boolean
+    checkouts: Checkout[] // Adicionado
+    notifications: Notification[] // Adicionado
+    pages: {
+      id: string
+      name: string
+      path: string
+      type: 'GENERIC' | 'CHECKOUT' | 'LANDING_PAGE' | 'THANK_YOU'
+      content: Record<string, any>
+      pathName?: string
+      order?: number
+      published: boolean
+      createdAt: string
+      updatedAt: string
+    }[]
+  }
 }
 
-export async function getFunnel(funnelId: string, published?: boolean): Promise<GetFunnelResponse> {
+export async function getFunnel(
+  funnelId: string,
+  published?: boolean,
+): Promise<GetFunnelResponse> {
   const searchParams: Record<string, string> = {}
 
   if (typeof published !== 'undefined') {
@@ -21,7 +42,7 @@ export async function getFunnel(funnelId: string, published?: boolean): Promise<
   }
 
   const result = await api
-    .get(`funnels/${funnelId}`, {
+    .get(`funnels/${funnelId}/details`, {
       searchParams,
     })
     .json<GetFunnelResponse>()

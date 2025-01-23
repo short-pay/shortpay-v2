@@ -39,8 +39,8 @@ const ContactForm = ({ apiCall, subTitle, title }: Props) => {
   })
   const isLoading = form.formState.isLoading
 
-  //CHALLENGE: We want to create tags for each leads that comes from the form
-  
+  // CHALLENGE: We want to create tags for each leads that comes from the form
+
   return (
     <Card className="max-w-[500px] w-[500px]">
       <CardHeader>
@@ -61,10 +61,7 @@ const ContactForm = ({ apiCall, subTitle, title }: Props) => {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Name"
-                      {...field}
-                    />
+                    <Input placeholder="Name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -78,21 +75,13 @@ const ContactForm = ({ apiCall, subTitle, title }: Props) => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Email"
-                      {...field}
-                    />
+                    <Input type="email" placeholder="Email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button
-              className="mt-4"
-              disabled={isLoading}
-              type="submit"
-            >
+            <Button className="mt-4" disabled={isLoading} type="submit">
               {form.formState.isSubmitting ? <Loading /> : 'Get a free quote!'}
             </Button>
           </form>
