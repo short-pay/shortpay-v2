@@ -10,28 +10,22 @@ export async function createFunnel(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .post(
-      '/funnels/:slug',
+      '/funnels/:org',
       {
         schema: {
           tags: ['Funnels'],
           summary: 'Create a new funnel',
           params: z.object({
-            slug: z.string(),
+            org: z.string(),
           }),
           body: z.object({
             name: z.string().min(1, 'Name is required'),
             description: z.string().optional(),
-            organizationId: z.string().uuid('Invalid organization ID format'),
             pages: z
               .array(
                 z.object({
                   name: z.string(),
-                  type: z.enum([
-                    'GENERIC',
-                    'CHECKOUT',
-                    'LANDING_PAGE',
-                    'THANK_YOU',
-                  ]),
+                  type: z.enum(['GENERIC', 'CHECKOUT', 'LANDING_PAGE', 'THANK_YOU']),
                   content: z.any().default([]),
                 }),
               )
@@ -47,35 +41,32 @@ export async function createFunnel(app: FastifyInstance) {
         },
       },
       async (request, reply) => {
-        const { slug } = request.params
-
-        const { organization } = await request.getUserMembership(slug)
-
-        const { name, description, organizationId, pages } = request.body
-
+        const { org } = request.params
+        const { organization } = await request.getUserMembership(org)
+    
         if (!organization) {
           throw new NotFoundError('Organization not found.')
         }
-
+    
+        const { name, description, pages } = request.body
+    
         const funnel = await prisma.funnel.create({
           data: {
             name,
             description,
-            organizationId,
+            organizationId: organization.id,
             pages: {
               create: pages.map((page, index) => ({
                 name: page.name,
                 type: page.type,
-                content: page.content,
-                path: `${name.toLowerCase().replace(/\s+/g, '-')}-${page.name
-                  .toLowerCase()
-                  .replace(/\s+/g, '-')}`,
-                order: index + 1, // Define o order com base na posição da página no array
+                content: page.content || {},
+                path: `${name.toLowerCase()}-${page.name.toLowerCase()}`,
+                order: index + 1,
               })),
             },
           },
         })
-
+    
         return reply.status(201).send({
           id: funnel.id,
           name: funnel.name,
