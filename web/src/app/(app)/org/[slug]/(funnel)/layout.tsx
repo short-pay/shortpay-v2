@@ -1,4 +1,4 @@
-export default function EditorLayout({
+export default function FunnelsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode

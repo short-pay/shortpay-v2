@@ -1,5 +1,7 @@
-import { FormEvent, useState, useTransition } from 'react'
-import { requestFormReset } from 'react-dom'
+'use client'
+
+import { type FormEvent, useCallback, useState, useTransition } from 'react'
+import { useFormStatus } from 'react-dom'
 
 interface FormState {
   success: boolean
@@ -8,36 +10,38 @@ interface FormState {
 }
 
 export function useFormState(
-  action: (data: FormData) => Promise<FormState>,
+  action: (prevState: FormState, data: FormData) => Promise<FormState>,
+  initialState: FormState = { success: false, message: null, errors: null },
   onSuccess?: () => Promise<void> | void,
-  initialState?: FormState,
 ) {
+  const [state, formAction] = useState(initialState)
   const [isPending, startTransition] = useTransition()
+  const { pending } = useFormStatus()
 
-  const [formState, setFormState] = useState(
-    initialState ?? { success: false, message: null, errors: null },
+  const handleSubmit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const form = event.currentTarget
+      const formData = new FormData(form)
+
+      startTransition(async () => {
+        const newState = await action(state, formData)
+
+        if (newState.success) {
+          startTransition(() => {
+            form.reset()
+          })
+
+          if (onSuccess) {
+            await onSuccess()
+          }
+        }
+
+        formAction(newState)
+      })
+    },
+    [action, onSuccess, state],
   )
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    const form = event.currentTarget
-    const data = new FormData(form)
-
-    startTransition(async () => {
-      const state = await action(data)
-
-      if (state.success) {
-        requestFormReset(form)
-
-        if (onSuccess) {
-          await onSuccess()
-        }
-      }
-
-      setFormState(state)
-    })
-  }
-
-  return [formState, handleSubmit, isPending] as const
+  return { state, handleSubmit, isPending: isPending || pending }
 }

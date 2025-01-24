@@ -11,6 +11,15 @@ const funnelSchema = z.object({
     .string()
     .min(4, { message: 'Por favor, inclua pelo menos 4 caracteres.' }),
   description: z.string().optional(),
+  pages: z
+    .array(
+      z.object({
+        name: z.string(),
+        type: z.enum(['GENERIC', 'CHECKOUT', 'LANDING_PAGE', 'THANK_YOU']),
+        content: z.any(),
+      }),
+    )
+    .optional(),
 })
 
 export type FunnelSchema = z.infer<typeof funnelSchema>
@@ -32,13 +41,20 @@ export async function createFunnelAction(data: FormData) {
     return { success: false, message: null, errors }
   }
 
-  const { name, description } = result.data
+  const { name, description, pages } = result.data
+
+  // Garante que todas as páginas tenham `content`
+  const sanitizedPages = pages?.map((page) => ({
+    ...page,
+    content: page.content ?? {}, // Adiciona valor padrão para content
+  }))
 
   try {
     const response = await createFunnel({
       name,
       description,
       org: currentOrg!,
+      pages: sanitizedPages,
     })
 
     return {

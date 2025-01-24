@@ -11,7 +11,7 @@ import {
   createFunnelAction,
   updateFunnelAction,
   type FunnelSchema,
-} from '@/app/(app)/org/[slug]/(funnel)/create-funnel/actions'
+} from '@/app/(app)/org/[slug]/(default-layout)/create-funnel/actions'
 
 interface FunnelFormProps {
   isUpdating?: boolean

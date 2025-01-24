@@ -23,12 +23,17 @@ export async function createFunnel({
   org,
   pages = [],
 }: CreateFunnelRequest): Promise<CreateFunnelResponse> {
+  const sanitizedPages = pages.map((page) => ({
+    ...page,
+    content: page.content ?? {}, // Adiciona um valor padrão para `content` caso esteja faltando
+  }))
+
   const result = await api
     .post(`funnels/${org}`, {
       json: {
         name,
         description,
-        pages,
+        pages: sanitizedPages,
       },
     })
     .json<CreateFunnelResponse>()

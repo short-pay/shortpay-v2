@@ -2,10 +2,10 @@ import { Header } from '@/components/header'
 
 export default function OrgLayout({
   children,
-  sheetIntegration,
+  sheet,
 }: Readonly<{
   children: React.ReactNode
-  sheetIntegration: React.ReactNode
+  sheet: React.ReactNode
 }>) {
   return (
     <div>
@@ -14,7 +14,7 @@ export default function OrgLayout({
 
       <main className="mx-auto w-full max-w-[1200px] py-4">
         {children}
-        {sheetIntegration}
+        {sheet}
       </main>
     </div>
   )

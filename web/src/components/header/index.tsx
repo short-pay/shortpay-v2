@@ -33,9 +33,10 @@ export async function Header() {
 
                 <nav className="flex items-center space-x-2 lg:space-x-3">
                   <MenuLink href={`/org/${org}`}>Dashboard</MenuLink>
-                  <MenuLink href={`/org/${org}/integrations?`}>
+                  <MenuLink href={`/org/${org}/integrations`}>
                     Integrações
                   </MenuLink>
+                  <MenuLink href={`/org/${org}/funnels`}>Funnels</MenuLink>
                   {/* <MenuLink href={`/org/${org}/customers`}>Clientes</MenuLink>
                   <MenuLink href={`/org/${org}/products`}>Produtos</MenuLink> */}
                 </nav>
