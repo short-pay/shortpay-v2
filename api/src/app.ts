@@ -135,7 +135,7 @@ app.register(getCheckout)
 
 // Funnels
 app.register(createFunnel)
-// app.register(getFunnels)
+app.register(getFunnels)
 app.register(getFunnel)
 
 // Webhooks
