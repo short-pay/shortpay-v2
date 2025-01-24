@@ -14,7 +14,7 @@ type Props = {
 
 export default async function FunnelPage({ params }: Props) {
   const { funnel } = await getFunnel(params.funnelId)
-  if (!funnel) return redirect(`/org/${params.org}/funnels`)
+  // if (!funnel) return redirect(`/org/${params.org}/funnels`)
 
   return (
     <BlurPage>

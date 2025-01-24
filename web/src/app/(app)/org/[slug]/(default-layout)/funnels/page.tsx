@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { FunnelsPagination } from './funnels-pagination'
@@ -17,8 +17,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { getFunnels } from '@/http/funnels/get-funnels'
+import Link from 'next/link'
 
 export default function FunnelsPage() {
+  const { slug } = useParams<{ slug: string }>()
+
   const searchParams = useSearchParams()
   const page = parseInt(searchParams.get('page') || '1', 10)
   const size = parseInt(searchParams.get('size') || '10', 10)
@@ -26,10 +29,11 @@ export default function FunnelsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['funnels', page, size, searchTerm],
-    queryFn: () =>
-      getFunnels({ slug: 'current-org-slug', page, size, searchTerm }),
+    queryFn: () => getFunnels({ slug, page, size, searchTerm }),
   })
 
+  console.log(data, 'aquisss')
+  console.log(slug, 'slug')
   return (
     <>
       <div className="rounded-md border">
@@ -51,7 +55,11 @@ export default function FunnelsPage() {
               {data?.funnels?.length && data?.funnels.length > 0 ? (
                 data?.funnels.map((funnel) => (
                   <TableRow key={funnel.id}>
-                    <TableCell>{funnel.name}</TableCell>
+                    <TableCell>
+                      <Link href={`/org/${slug}/funnels/${funnel.id}`}>
+                        {funnel.name}
+                      </Link>
+                    </TableCell>
                     <TableCell>{funnel.description || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge

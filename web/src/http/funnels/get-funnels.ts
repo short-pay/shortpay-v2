@@ -1,11 +1,12 @@
+import type { Funnel } from '@/@types/funnels'
 import { api } from '../api-client'
 
-interface Funnel {
-  id: string
-  name: string
-  description: string | null
-  published: boolean
-}
+// interface Funnel {
+//   id: string
+//   name: string
+//   description: string | null
+//   published: boolean
+// }
 
 export interface GetFunnelsResponse {
   funnels: Funnel[]
@@ -33,7 +34,7 @@ export async function getFunnels({
   })
 
   const result = await api
-    .get(`funnels/${slug}?${queryParams.toString()}`, {
+    .get(`funnels/${slug}`, {
       next: { tags: ['funnels'] },
     })
     .json<GetFunnelsResponse>()
