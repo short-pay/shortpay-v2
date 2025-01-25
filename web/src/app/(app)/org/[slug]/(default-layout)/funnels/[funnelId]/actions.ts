@@ -27,16 +27,19 @@ export type FunnelPageSchema = z.infer<typeof funnelPageSchema>
  */
 export async function createFunnelPageAction(data: FormData) {
   const parsedData = funnelPageSchema.safeParse(Object.fromEntries(data))
-
+  console.log(Object.fromEntries(data), 'Funnel Page Data')
+  console.log(parsedData.success)
   if (!parsedData.success) {
     const errors = parsedData.error.flatten().fieldErrors
     return { success: false, message: null, errors }
   }
 
   const { name, pathName, funnelId, order, type, content } = parsedData.data
+  console.log(parsedData.data, 'Funnel Page parse')
 
   try {
-    const response = await createFunnelPage({
+    console.log('passou no try')
+    await createFunnelPage({
       name,
       pathName,
       funnelId,
@@ -44,10 +47,9 @@ export async function createFunnelPageAction(data: FormData) {
       type,
       content,
     })
-
     return {
       success: true,
-      message: `Página "${response.name}" criada com sucesso!`,
+      message: `Página "${name}" criada com sucesso!`,
       errors: null,
     }
   } catch (err) {

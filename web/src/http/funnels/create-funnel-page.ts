@@ -36,5 +36,7 @@ export async function createFunnelPage({
     })
     .json<CreateFunnelPageResponse>()
 
+  console.log(response, 'response fetch create page')
+
   return response
 }

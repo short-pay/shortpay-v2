@@ -35,6 +35,7 @@ export default class FunnelSettings extends React.Component<FunnelSettingsProps>
   async componentDidMount() {
     const { slug } = this.props
     const { products } = await getProducts({ org: slug })
+
     this.setState({ products, isLoading: false })
   }
 

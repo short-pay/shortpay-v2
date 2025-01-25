@@ -5,26 +5,22 @@ interface GetProductsParams {
 }
 
 export interface GetResponseProduct {
-products:{
-  id: string
-  name: string
-  description?: string
-  price: number
-  currency: string
-  imageUrls: string[]
-  createdAt: string
-  updatedAt: string
-}[]
+  products: {
+    id: string
+    name: string
+    description?: string
+    price: number
+    currency: string
+    imageUrls: string[]
+    createdAt: string
+    updatedAt: string
+  }[]
 }
 
 export async function getProducts({
   org,
 }: GetProductsParams): Promise<GetResponseProduct> {
- 
-    const result = await api
-      .get(`/products/${org}`)
-      .json<GetResponseProduct>()
-
-    return result
-
-  }
+  const result = await api.get(`products/${org}`).json<GetResponseProduct>()
+  console.log({ result })
+  return result
+}

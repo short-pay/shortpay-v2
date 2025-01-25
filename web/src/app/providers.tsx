@@ -6,6 +6,7 @@ import { ThemeProvider } from 'next-themes'
 import type { ReactNode } from 'react'
 
 import { queryClient } from '@/lib/react-query'
+import ModalProvider from '@/providers/modal-provider'
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -16,7 +17,7 @@ export function Providers({ children }: { children: ReactNode }) {
           defaultTheme="dark"
           disableTransitionOnChange
         >
-          {children}
+          <ModalProvider>{children}</ModalProvider>
         </ThemeProvider>
       </NuqsAdapter>
     </QueryClientProvider>

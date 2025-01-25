@@ -1,9 +1,13 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Loader2 } from 'lucide-react'
+import { Loader2, PlusCircle } from 'lucide-react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+
+import { Button } from '@/components/ui/button'
+
+import { FunnelsFilters } from './funnels-filters'
 
 import { FunnelsPagination } from './funnels-pagination'
 import { FunnelItemActions } from './funnel-item-actions'
@@ -32,10 +36,19 @@ export default function FunnelsPage() {
     queryFn: () => getFunnels({ slug, page, size, searchTerm }),
   })
 
-  console.log(data, 'aquisss')
-  console.log(slug, 'slug')
   return (
     <>
+      <div className="flex items-center justify-between">
+        <Suspense fallback={null}>
+          <FunnelsFilters />
+        </Suspense>
+        <Button size="sm" asChild>
+          <Link href={`/org/${slug}/create-funnel`}>
+            <PlusCircle className="mr-2 size-4" />
+            Create Funnel
+          </Link>
+        </Button>
+      </div>
       <div className="rounded-md border">
         {isLoading ? (
           <div className="flex h-24 items-center justify-center">

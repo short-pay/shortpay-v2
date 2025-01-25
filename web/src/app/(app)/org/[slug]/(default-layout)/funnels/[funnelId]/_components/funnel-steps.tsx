@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useModal } from '@/providers/modal-provider'
 
 // Componentes/Icons
-import { FunnelPageForm } from '@/components/forms/funnel-page-form/funnel-page'
+import { FunnelPageForm } from '@/app/(app)/org/[slug]/(default-layout)/funnels/[funnelId]/form-funnel-page'
 import { AlertDialog } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -41,12 +41,15 @@ type Props = {
   funnel: Funnel
   slug: string
   pages: FunnelPage[]
-  funnelId: string
 }
 
-const FunnelSteps = ({ funnel, funnelId, pages, slug }: Props) => {
+const FunnelSteps = ({ funnel, pages, slug }: Props) => {
   const queryClient = useQueryClient()
   const { setOpen } = useModal()
+
+  const funnelId = funnel.id
+
+  console.log(funnelId, 'funnel Id Dentro de steps')
 
   // Estado para controlar quais páginas estão sendo exibidas
   const [pagesState, setPagesState] = useState<FunnelPage[]>(pages)
@@ -228,7 +231,7 @@ const FunnelSteps = ({ funnel, funnelId, pages, slug }: Props) => {
                             pathName: clickedPage.pathName || '',
                             content: clickedPage.content || {},
                             order: clickedPage.order ?? 0,
-                            funnelId,
+                            funnelId: funnel.id,
                             type: clickedPage.type,
                           }
                         : undefined

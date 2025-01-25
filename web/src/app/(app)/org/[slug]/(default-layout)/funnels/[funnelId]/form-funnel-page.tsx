@@ -28,6 +28,8 @@ export function FunnelPageForm({
   const [{ errors, message, success }, handleSubmit, isPending] =
     useFormState(formAction)
 
+  console.log({ initialData }, 'forms')
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <StatusAlert
@@ -40,6 +42,11 @@ export function FunnelPageForm({
       {isUpdating && initialData?.id && (
         <input type="hidden" name="id" id="id" value={initialData.id} />
       )}
+
+      <input type="hidden" name="funnelId" value={initialData?.funnelId} />
+      <input type="hidden" name="order" value={initialData?.order || 0} />
+      <input type="hidden" name="type" value={initialData?.type || 'GENERIC'} />
+
       <div className="space-y-1">
         <Label htmlFor="name">Nome da página</Label>
         <Input name="name" id="name" defaultValue={initialData?.name} />

@@ -1,25 +1,32 @@
-import BlurPage from '@/components/global/blur-page'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import React from 'react'
 import FunnelSettings from './_components/funnel-settings'
 import FunnelSteps from './_components/funnel-steps'
 import { getFunnel } from '@/http/funnels/get-funnel'
+import { getCurrentOrg } from '@/auth/auth'
 
-type Props = {
-  params: { funnelId: string; org: string }
+interface FunnelPagePageProps {
+  params: Promise<{ funnelId: string }>
 }
 
-export default async function FunnelPage({ params }: Props) {
-  const { funnel } = await getFunnel(params.funnelId)
-  // if (!funnel) return redirect(`/org/${params.org}/funnels`)
+export default async function FunnelPage({ params }: FunnelPagePageProps) {
+  const { funnelId } = await params
+
+  console.log({ funnelId })
+
+  const org = await getCurrentOrg()
+
+  const { funnel } = await getFunnel(funnelId)
+  // if (!funnel) return redirect(`/org/${org}/funnels`)
+  if (!funnel) return notFound()
 
   return (
-    <BlurPage>
+    <div>
       <Link
-        href={`/org/${params.org}/funnels`}
+        href={`/org/${org!}/funnels`}
         className="flex justify-between gap-4 mb-4 text-muted-foreground"
       >
         Back
@@ -31,26 +38,21 @@ export default async function FunnelPage({ params }: Props) {
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
         <TabsContent value="steps">
-          <FunnelSteps
-            funnel={funnel}
-            slug={params.org}
-            pages={funnel.pages}
-            funnelId={params.funnelId}
-          />
+          <FunnelSteps funnel={funnel} slug={org!} pages={funnel.pages} />
         </TabsContent>
         <TabsContent value="settings">
           <FunnelSettings
-            slug={params.org}
+            slug={org!}
             defaultData={{
               id: funnel.id,
               name: funnel.name,
               description: funnel.description || null,
               liveProducts: funnel.liveProducts || '',
-              slug: params.org,
+              slug: org!,
             }}
           />
         </TabsContent>
       </Tabs>
-    </BlurPage>
+    </div>
   )
 }
