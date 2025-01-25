@@ -42,6 +42,8 @@ export async function createFunnelPageRoute(app: FastifyInstance) {
         const { funnelId } = request.params
         const { name, type, content, order } = request.body
 
+        console.log(request.body, 'body api')
+
         // Check if the funnel exists
         const funnel = await prisma.funnel.findUnique({
           where: { id: funnelId },
@@ -50,6 +52,9 @@ export async function createFunnelPageRoute(app: FastifyInstance) {
         if (!funnel) {
          throw new NotFoundError()
         }
+
+        console.log(funnel, 'body api')
+
 
         const page = await prisma.funnelPage.create({
           data: {
@@ -62,6 +67,10 @@ export async function createFunnelPageRoute(app: FastifyInstance) {
             path: `${funnelId}/${name.toLowerCase().replace(/\s+/g, '-')}`, // Adicione o campo path
           },
         })
+
+
+        console.log(page, 'body api')
+
 
         return reply.status(201).send({
           id: page.id,

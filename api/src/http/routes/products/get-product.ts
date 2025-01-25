@@ -10,7 +10,7 @@ export async function getProduct(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .get(
-      '/products/:id',
+      '/products/:id/details',
       {
         schema: {
           tags: ['Products'],

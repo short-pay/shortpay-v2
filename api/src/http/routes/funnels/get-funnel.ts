@@ -23,6 +23,7 @@ export async function getFunnel(app: FastifyInstance) {
           }),
           response: {
             200: z.object({
+            funnel: z.object({
               id: z.string(),
               name: z.string(),
               description: z.string().nullable(),
@@ -40,6 +41,7 @@ export async function getFunnel(app: FastifyInstance) {
                   published: z.boolean(),
                 }),
               ),
+            })
             }),
           },
         },
@@ -64,7 +66,8 @@ export async function getFunnel(app: FastifyInstance) {
           throw new NotFoundError()
         }
 
-        return reply.status(200).send(funnel)
-      },
+        console.log(funnel)
+        return reply.status(200).send({ funnel });  
+        },
     )
 }
