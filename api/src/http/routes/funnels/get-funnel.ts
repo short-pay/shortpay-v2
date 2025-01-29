@@ -37,6 +37,9 @@ export async function getFunnel(app: FastifyInstance) {
                     'LANDING_PAGE',
                     'THANK_YOU',
                   ]),
+                  order: z.number(),
+                  pathName: z.string().nullable(),
+                  path: z.string(),
                   content: z.any(),
                   published: z.boolean(),
                 }),
@@ -66,7 +69,6 @@ export async function getFunnel(app: FastifyInstance) {
           throw new NotFoundError()
         }
 
-        console.log(funnel)
         return reply.status(200).send({ funnel });  
         },
     )

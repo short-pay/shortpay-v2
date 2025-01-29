@@ -5,7 +5,7 @@ import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { NotFoundError } from '@/http/_errors/not-found-error'
 
-export async function createFunnelPageRoute(app: FastifyInstance) {
+export async function createFunnelPage(app: FastifyInstance) {
   app
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
@@ -41,8 +41,6 @@ export async function createFunnelPageRoute(app: FastifyInstance) {
       async (request, reply) => {
         const { funnelId } = request.params
         const { name, type, content, order } = request.body
-
-        console.log(request.body, 'body api')
 
         // Check if the funnel exists
         const funnel = await prisma.funnel.findUnique({

@@ -30,6 +30,8 @@ export async function getProducts(app: FastifyInstance) {
           where: { organizationId },
         })
 
+        console.log(products)
+
         return reply.status(200).send(products)
       },
     )

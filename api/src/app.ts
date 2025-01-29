@@ -42,7 +42,8 @@ import fastifyCors from '@fastify/cors'
 import { createFunnel } from './http/routes/funnels/create-funnel'
 import { getFunnels } from './http/routes/funnels/get-funnels'
 import { getFunnel } from './http/routes/funnels/get-funnel'
-import { createFunnelPageRoute } from './http/routes/funnel-pages/create-funnel-page'
+import { createFunnelPage } from './http/routes/funnel-pages/create-funnel-page'
+import { getFunnelPages } from './http/routes/funnel-pages/get-funnels-pages'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -140,7 +141,8 @@ app.register(getFunnels)
 app.register(getFunnel)
 
 // Funnels Page
-app.register(createFunnelPageRoute)
+app.register(createFunnelPage)
+app.register(getFunnelPages)
 
 // Webhooks
 app.register(postbackTransaction)

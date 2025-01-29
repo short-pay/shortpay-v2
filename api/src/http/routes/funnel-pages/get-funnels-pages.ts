@@ -4,7 +4,7 @@ import { z } from 'zod'
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 
-export async function fetchFunnelPagesRoute(app: FastifyInstance) {
+export async function getFunnelPages(app: FastifyInstance) {
   app
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
@@ -46,6 +46,8 @@ export async function fetchFunnelPagesRoute(app: FastifyInstance) {
           where: { funnelId },
           orderBy: { order: 'asc' },
         })
+
+        console.log({pages},'Funnel pages in api')
 
         return reply.status(200).send({
           pages,

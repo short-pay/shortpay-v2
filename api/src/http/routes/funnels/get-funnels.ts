@@ -45,8 +45,6 @@ export async function getFunnels(app: FastifyInstance) {
         const { page, size, searchTerm } = request.query
 
 
-        console.log(slug, 'slug organization here')
-
         const { organization } = await request.getUserMembership(slug)
         const organizationId = organization.id
 
