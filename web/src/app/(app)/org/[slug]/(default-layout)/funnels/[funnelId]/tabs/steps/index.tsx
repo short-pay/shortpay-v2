@@ -50,12 +50,20 @@ export default function Steps({ funnel, pages, slug }: StepsProps) {
   const [pagesState, setPagesState] = useState<FunnelPage[]>(pages)
   const [clickedPage, setClickedPage] = useState<FunnelPage | undefined>()
 
-  useEffect(() => {
-    setPagesState(pages)
-    if (!clickedPage && pages.length > 0) {
-      setClickedPage(pages[0])
-    }
-  }, [pages, clickedPage])
+useEffect(() => {
+  // Corrigindo a sincronização do estado
+  setPagesState(prev => {
+    // Mantém as páginas existentes quando possível
+    const mergedPages = pages.map(newPage => 
+      prev.find(p => p.id === newPage.id) || newPage
+    )
+    return mergedPages
+  })
+
+  if (!clickedPage && pages.length > 0) {
+    setClickedPage(pages[0])
+  }
+}, [pages]) // Remova clickedPage das dependências
 
   // --------------------------------------------
   // FUNÇÕES DE DRAG & DROP
@@ -113,7 +121,8 @@ export default function Steps({ funnel, pages, slug }: StepsProps) {
                   onDragEnd={onDragEnd}
                   onDragStart={onDragStart}
                 >
-                  <Droppable droppableId="funnels" direction="vertical">
+                  <Droppable droppableId="funnels" direction="vertical" isDropDisabled={false} // Adicione esta linha
+                  >
                     {(provided) => (
                       <div
                         {...provided.droppableProps}

@@ -106,4 +106,18 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Garante que o elemento sendo arrastado tenha a posição correta */
+[data-rbd-draggable-context-id] {
+  position: static !important;
 }
+
+[data-rbd-drag-handle-context-id] {
+  cursor: grab;
+}
+
+[data-rbd-drag-handle-context-id]:active {
+  cursor: grabbing;
+}
+}
+

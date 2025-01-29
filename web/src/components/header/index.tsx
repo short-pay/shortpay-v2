@@ -1,4 +1,4 @@
-import { PlusCircle, Slash } from 'lucide-react'
+import { Slash } from 'lucide-react'
 
 import { getCurrentOrg, getCurrentPathName } from '@/auth/auth'
 
@@ -8,8 +8,6 @@ import { ProfileButton } from './profile-button'
 import { ThemeAwareLogo } from './theme-aware-logo'
 import { OrganizationSwitcherWrapper } from '../organization-switcher/organization-switcher-wrapper'
 import { Search } from './search'
-import { Button } from '../ui/button'
-import Link from 'next/link'
 
 export async function Header() {
   const org = await getCurrentOrg()
@@ -49,7 +47,7 @@ export async function Header() {
               <>
                 <Search />
 
-                <Separator orientation="vertical" className="h-6" />
+                {/* <Separator orientation="vertical" className="h-6" />
 
                 <Button size="sm" asChild>
                   <Link href={`/org/${org}/editor`}>
@@ -58,7 +56,7 @@ export async function Header() {
                   </Link>
                 </Button>
 
-                <Separator orientation="vertical" className="h-6" />
+                <Separator orientation="vertical" className="h-6" /> */}
               </>
             )}
 
