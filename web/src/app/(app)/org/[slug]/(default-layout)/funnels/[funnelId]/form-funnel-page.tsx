@@ -11,6 +11,7 @@ import {
   FunnelPageSchema,
 } from './actions'
 import { Textarea } from '@/components/ui/textarea'
+import { useParams } from 'next/navigation'
 
 interface FunnelPageFormProps {
   isUpdating?: boolean
@@ -21,14 +22,14 @@ export function FunnelPageForm({
   isUpdating = false,
   initialData,
 }: FunnelPageFormProps) {
+  const { funnelId } = useParams<{ funnelId: string }>()
+
   const formAction = isUpdating
     ? updateFunnelPageAction
     : createFunnelPageAction
 
   const [{ errors, message, success }, handleSubmit, isPending] =
     useFormState(formAction)
-
-  console.log({ initialData }, 'forms')
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -43,7 +44,7 @@ export function FunnelPageForm({
         <input type="hidden" name="id" id="id" value={initialData.id} />
       )}
 
-      <input type="hidden" name="funnelId" value={initialData?.funnelId} />
+      <input type="hidden" name="funnelId" value={funnelId} />
       <input type="hidden" name="order" value={initialData?.order || 0} />
       <input type="hidden" name="type" value={initialData?.type || 'GENERIC'} />
 

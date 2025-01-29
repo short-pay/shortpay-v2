@@ -5,15 +5,16 @@ import { z } from 'zod'
 
 import { createFunnelPage } from '@/http/funnels/create-funnel-page'
 import { updateFunnelPage } from '@/http/funnels/update-funnel-page'
+import { revalidateTag } from 'next/cache'
 
 const funnelPageSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z
     .string()
     .min(3, { message: 'O nome da página deve ter pelo menos 3 caracteres.' }),
   pathName: z.string().optional(),
-  funnelId: z.string().uuid(),
-  order: z
+  funnelId: z.string(),
+  order: z.coerce
     .number()
     .min(0, { message: 'A ordem precisa ser maior ou igual a 0.' }),
   type: z.enum(['GENERIC', 'CHECKOUT', 'LANDING_PAGE', 'THANK_YOU']),
@@ -27,18 +28,16 @@ export type FunnelPageSchema = z.infer<typeof funnelPageSchema>
  */
 export async function createFunnelPageAction(data: FormData) {
   const parsedData = funnelPageSchema.safeParse(Object.fromEntries(data))
-  console.log(Object.fromEntries(data), 'Funnel Page Data')
-  console.log(parsedData.success)
+
   if (!parsedData.success) {
     const errors = parsedData.error.flatten().fieldErrors
+
     return { success: false, message: null, errors }
   }
 
   const { name, pathName, funnelId, order, type, content } = parsedData.data
-  console.log(parsedData.data, 'Funnel Page parse')
 
   try {
-    console.log('passou no try')
     await createFunnelPage({
       name,
       pathName,
@@ -47,6 +46,8 @@ export async function createFunnelPageAction(data: FormData) {
       type,
       content,
     })
+
+    revalidateTag('funnels')
     return {
       success: true,
       message: `Página "${name}" criada com sucesso!`,

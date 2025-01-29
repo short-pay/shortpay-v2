@@ -1,19 +1,21 @@
 import { api } from '../api-client'
 
 export interface FunnelPage {
-  id: string
-  name: string
-  type: 'GENERIC' | 'CHECKOUT' | 'LANDING_PAGE' | 'THANK_YOU'
-  content: any
-  order: number
-  pathName: string
-  path: string
+  pages: {
+    id: string
+    name: string
+    path: string
+    pathName: string
+    order: number
+    type: 'GENERIC' | 'CHECKOUT' | 'LANDING_PAGE' | 'THANK_YOU'
+    content: any
+    metadata: any
+    published: boolean
+  }[]
 }
 
-export async function getFunnelPages(funnelId: string): Promise<FunnelPage[]> {
-  const response = await api
-    .get(`funnels/${funnelId}/pages`)
-    .json<{ pages: FunnelPage[] }>()
+export async function getFunnelPages(funnelId: string): Promise<FunnelPage> {
+  const result = await api.get(`funnels/${funnelId}/pages`).json<FunnelPage>()
 
-  return response.pages
+  return result
 }
