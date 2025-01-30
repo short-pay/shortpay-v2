@@ -45,3 +45,29 @@ export const funnels = [
     ],
   },
 ]
+
+export const data = {
+  id: 'page_01',
+  name: 'Página Inicial',
+  path: '/inicio',
+  type: 'CHECKOUT',
+  pathName: 'inicio',
+  order: 1,
+  published: true,
+  content: `{
+    title: 'Bem-vindo ao nosso Funnel',
+    sections: [
+      { type: 'hero', text: 'Destaque inicial' },
+      { type: 'feature', text: 'Alguns recursos' },
+    ],
+  }`,
+  previewImage: 'https://via.placeholder.com/300',
+  metadata: {
+    seoTitle: 'Título SEO',
+    seoDescription: 'Descrição para mecanismos de busca',
+  },
+  createdAt: '2025-01-01T12:00:00.000Z',
+  updatedAt: '2025-01-02T09:45:00.000Z',
+  funnelId: 'funnel_01',
+  checkoutId: null,
+}

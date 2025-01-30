@@ -1,4 +1,6 @@
 'use client'
+
+import type { FunnelPage } from '@/@types/funnels'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
@@ -9,9 +11,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { saveActivityLogsNotification, upsertFunnelPage } from '@/lib/queries'
+// import { saveActivityLogsNotification, upsertFunnelPage } from '@/lib/queries'
 import { DeviceTypes, useEditor } from '@/providers/editor/editor-provider'
-import { FunnelPage } from '@prisma/client'
+// import { FunnelPage } from '@prisma/client'
 import clsx from 'clsx'
 import {
   ArrowLeftCircle,
@@ -30,13 +32,13 @@ import { toast } from 'sonner'
 type Props = {
   funnelId: string
   funnelPageDetails: FunnelPage
-  subaccountId: string
+  slug: string
 }
 
 const FunnelEditorNavigation = ({
   funnelId,
   funnelPageDetails,
-  subaccountId,
+  slug,
 }: Props) => {
   const router = useRouter()
   const { state, dispatch } = useEditor()
@@ -53,15 +55,15 @@ const FunnelEditorNavigation = ({
   ) => {
     if (event.target.value === funnelPageDetails.name) return
     if (event.target.value) {
-      await upsertFunnelPage(
-        subaccountId,
-        {
-          id: funnelPageDetails.id,
-          name: event.target.value,
-          order: funnelPageDetails.order,
-        },
-        funnelId
-      )
+      // await upsertFunnelPage(
+      //   slug,
+      //   {
+      //     id: funnelPageDetails.id,
+      //     name: event.target.value,
+      //     order: funnelPageDetails.order,
+      //   },
+      //   funnelId
+      // )
 
       toast('Success', {
         description: 'Saved Funnel Page title',
@@ -91,19 +93,19 @@ const FunnelEditorNavigation = ({
   const handleOnSave = async () => {
     const content = JSON.stringify(state.editor.elements)
     try {
-      const response = await upsertFunnelPage(
-        subaccountId,
-        {
-          ...funnelPageDetails,
-          content,
-        },
-        funnelId
-      )
-      await saveActivityLogsNotification({
-        agencyId: undefined,
-        description: `Updated a funnel page | ${response?.name}`,
-        subaccountId: subaccountId,
-      })
+      // const response = await upsertFunnelPage(
+      //   slug,
+      //   {
+      //     ...funnelPageDetails,
+      //     content,
+      //   },
+      //   funnelId
+      // )
+      // await saveActivityLogsNotification({
+      //   agencyId: undefined,
+      //   description: `Updated a funnel page | ${response?.name}`,
+      //   slug: slug,
+      // })
       toast('Success', {
         description: 'Saved Editor',
       })
@@ -123,7 +125,7 @@ const FunnelEditorNavigation = ({
         )}
       >
         <aside className="flex items-center gap-4 max-w-[260px] w-[300px]">
-          <Link href={`/subaccount/${subaccountId}/funnels/${funnelId}`}>
+          <Link href={`/subaccount/${slug}/funnels/${funnelId}`}>
             <ArrowLeftCircle />
           </Link>
           <div className="flex flex-col w-full ">
@@ -231,7 +233,7 @@ const FunnelEditorNavigation = ({
               Publish
             </div>
             <span className="text-muted-foreground text-sm">
-              Last updated {funnelPageDetails.updatedAt.toLocaleDateString()}
+              Last updated {funnelPageDetails.updatedAt}
             </span>
           </div>
           <Button onClick={handleOnSave}>Save</Button>

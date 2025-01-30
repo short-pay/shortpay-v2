@@ -4,6 +4,7 @@ import { getCurrentOrg } from '@/auth/auth'
 import { createFunnel } from '@/http/funnels/create-funnel'
 import { updateFunnel } from '@/http/funnels/update-funnel'
 import { HTTPError } from 'ky'
+import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
 const funnelSchema = z.object({
@@ -56,6 +57,8 @@ export async function createFunnelAction(data: FormData) {
       org: currentOrg!,
       pages: sanitizedPages,
     })
+
+    revalidateTag('funnels')
 
     return {
       success: true,

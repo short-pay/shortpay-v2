@@ -43,7 +43,7 @@ const SettingsTab = (props: Props) => {
 
   const handleOnChanges = (e: any) => {
     const styleSettings = e.target.id
-    let value = e.target.value
+    const value = e.target.value
     const styleObject = {
       [styleSettings]: value,
     }
@@ -64,7 +64,7 @@ const SettingsTab = (props: Props) => {
 
   const handleChangeCustomValues = (e: any) => {
     const settingProperty = e.target.id
-    let value = e.target.value
+    const value = e.target.value
     const styleObject = {
       [settingProperty]: value,
     }
@@ -89,10 +89,7 @@ const SettingsTab = (props: Props) => {
       className="w-full"
       defaultValue={['Typography', 'Dimensions', 'Decorations', 'Flexbox']}
     >
-      <AccordionItem
-        value="Custom"
-        className="px-6 py-0  "
-      >
+      <AccordionItem value="Custom" className="px-6 py-0  ">
         <AccordionTrigger className="!no-underline">Custom</AccordionTrigger>
         <AccordionContent>
           {state.editor.selectedElement.type === 'link' &&
@@ -109,10 +106,7 @@ const SettingsTab = (props: Props) => {
             )}
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem
-        value="Typography"
-        className="px-6 py-0  border-y-[1px]"
-      >
+      <AccordionItem value="Typography" className="px-6 py-0  border-y-[1px]">
         <AccordionTrigger className="!no-underline">
           Typography
         </AccordionTrigger>
@@ -212,10 +206,7 @@ const SettingsTab = (props: Props) => {
           </div>
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem
-        value="Dimensions"
-        className=" px-6 py-0 "
-      >
+      <AccordionItem value="Dimensions" className=" px-6 py-0 ">
         <AccordionTrigger className="!no-underline">
           Dimensions
         </AccordionTrigger>
@@ -336,10 +327,7 @@ const SettingsTab = (props: Props) => {
           </div>
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem
-        value="Decorations"
-        className="px-6 py-0 "
-      >
+      <AccordionItem value="Decorations" className="px-6 py-0 ">
         <AccordionTrigger className="!no-underline">
           Decorations
         </AccordionTrigger>
@@ -354,7 +342,7 @@ const SettingsTab = (props: Props) => {
                   : parseFloat(
                       (
                         state.editor.selectedElement.styles?.opacity || '0'
-                      ).replace('%', '')
+                      ).replace('%', ''),
                     ) || 0}
                 %
               </small>
@@ -374,7 +362,7 @@ const SettingsTab = (props: Props) => {
                   : parseFloat(
                       (
                         state.editor.selectedElement.styles?.opacity || '0'
-                      ).replace('%', '')
+                      ).replace('%', ''),
                     ) || 0,
               ]}
               max={100}
@@ -391,7 +379,7 @@ const SettingsTab = (props: Props) => {
                   : parseFloat(
                       (
                         state.editor.selectedElement.styles?.borderRadius || '0'
-                      ).replace('px', '')
+                      ).replace('px', ''),
                     ) || 0}
                 px
               </small>
@@ -412,7 +400,7 @@ const SettingsTab = (props: Props) => {
                   : parseFloat(
                       (
                         state.editor.selectedElement.styles?.borderRadius || '0'
-                      ).replace('%', '')
+                      ).replace('%', ''),
                     ) || 0,
               ]}
               max={100}
@@ -494,10 +482,7 @@ const SettingsTab = (props: Props) => {
           </div>
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem
-        value="Flexbox"
-        className="px-6 py-0  "
-      >
+      <AccordionItem value="Flexbox" className="px-6 py-0  ">
         <AccordionTrigger className="!no-underline">Flexbox</AccordionTrigger>
         <AccordionContent>
           <Label className="text-muted-foreground">Justify Content</Label>

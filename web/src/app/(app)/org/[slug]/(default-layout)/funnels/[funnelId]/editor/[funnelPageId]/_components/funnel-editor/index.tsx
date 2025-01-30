@@ -1,11 +1,12 @@
 'use client'
 import { Button } from '@/components/ui/button'
-import { getFunnelPageDetails } from '@/lib/queries'
+// import { getFunnelPageDetails } from '@/lib/queries'
 import { useEditor } from '@/providers/editor/editor-provider'
 import clsx from 'clsx'
 import { EyeOff } from 'lucide-react'
 import React, { useEffect } from 'react'
 import Recursive from './funnel-editor-components/recursive'
+import { data } from '@/utils/db'
 
 type Props = { funnelPageId: string; liveMode?: boolean }
 
@@ -24,7 +25,9 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
   //CHALLENGE: make this more performant
   useEffect(() => {
     const fetchData = async () => {
-      const response = await getFunnelPageDetails(funnelPageId)
+      // const response = await getFunnelPageDetails(funnelPageId)
+
+      const response = data
       if (!response) return
 
       dispatch({

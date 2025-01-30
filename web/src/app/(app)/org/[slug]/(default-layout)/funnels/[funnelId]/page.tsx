@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation'
 import { getFunnel } from '@/http/funnels/get-funnel'
 import { getCurrentOrg } from '@/auth/auth'
 import Steps from './tabs/steps'
-import { Webhooks } from './tabs/steps-settings'
+
+import FunnelSettings from './_components/funnel-settings'
 
 interface FunnelPageProps {
   params: { funnelId: string }
@@ -76,7 +77,7 @@ export default async function FunnelPage({ params }: FunnelPageProps) {
           <Steps funnel={funnel} slug={org!} pages={funnel.pages} />
         </TabsContent>
         <TabsContent value="settings">
-          {/* <FunnelSettings
+          <FunnelSettings
             slug={org!}
             defaultData={{
               id: funnel.id,
@@ -85,9 +86,9 @@ export default async function FunnelPage({ params }: FunnelPageProps) {
               liveProducts: funnel.liveProducts || '',
               slug: org!,
             }}
-          /> */}
+          />
 
-          <Webhooks />
+          {/* <Webhooks /> */}
         </TabsContent>
       </Tabs>
     </div>

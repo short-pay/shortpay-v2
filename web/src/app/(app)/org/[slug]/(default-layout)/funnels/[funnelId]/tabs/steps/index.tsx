@@ -63,11 +63,12 @@ useEffect(() => {
   if (!clickedPage && pages.length > 0) {
     setClickedPage(pages[0])
   }
-}, [pages]) // Remova clickedPage das dependências
+}, [pages])
 
   // --------------------------------------------
   // FUNÇÕES DE DRAG & DROP
   // --------------------------------------------
+
   const onDragStart = (event: DragStart) => {
     // current chosen page
     const { draggableId } = event
@@ -229,7 +230,7 @@ useEffect(() => {
                     <div className="flex gap-4 items-start">
                       <div className="border-2 rounded-lg sm:w-80 w-full overflow-clip">
                         <Link
-                          href={`/subaccount/${slug}/funnels/${funnelId}/editor/${clickedPage.id}`}
+                          href={`/org/${slug}/funnels/${funnelId}/editor/${clickedPage.id}`}
                           className="relative group"
                         >
                           <div className="cursor-pointer group-hover:opacity-30 w-full">

@@ -15,7 +15,7 @@ export type FunnelPage = {
   pathName?: string
   order?: number
   published?: boolean
-  content: Record<string, any> // JSON data
+  content: string // JSON data
   previewImage?: string | null
   metadata?: Record<string, any> | null // JSON data for metadata
   createdAt: string
