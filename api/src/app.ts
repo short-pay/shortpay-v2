@@ -44,6 +44,7 @@ import { getFunnels } from './http/routes/funnels/get-funnels'
 import { getFunnel } from './http/routes/funnels/get-funnel'
 import { createFunnelPage } from './http/routes/funnel-pages/create-funnel-page'
 import { getFunnelPages } from './http/routes/funnel-pages/get-funnels-pages'
+import { deleteFunnelPages } from './http/routes/funnel-pages/delete-funnel-pages'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -143,6 +144,9 @@ app.register(getFunnel)
 // Funnels Page
 app.register(createFunnelPage)
 app.register(getFunnelPages)
+app.register(deleteFunnelPages)
+
+
 
 // Webhooks
 app.register(postbackTransaction)

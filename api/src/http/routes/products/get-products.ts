@@ -18,6 +18,24 @@ export async function getProducts(app: FastifyInstance) {
           params: z.object({
             slug: z.string(),
           }),
+          response: {
+           200: z.object({
+            products: z.array(
+              z.object({
+                name: z.string(),
+                id: z.string(),
+                currency: z.string(),
+                createdAt: z.date(),
+                updatedAt: z.date(),
+                organizationId: z.string(),
+                description: z.string().nullable(),
+                price: z.number(),
+                imageUrls: z.array(z.string()),
+                checkoutId: z.string().nullable(),
+              })
+            )
+           }),
+          },
         },
       },
       async (request, reply) => {
@@ -32,7 +50,7 @@ export async function getProducts(app: FastifyInstance) {
 
         console.log(products)
 
-        return reply.status(200).send(products)
+        return reply.status(200).send({products})
       },
     )
 }
