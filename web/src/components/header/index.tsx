@@ -34,7 +34,8 @@ export async function Header() {
                   <MenuLink href={`/org/${org}/integrations`}>
                     Integrações
                   </MenuLink>
-                  <MenuLink href={`/org/${org}/funnels`}>Funnels</MenuLink>
+                  <MenuLink href={`/org/${org}/funnels`}>Funil</MenuLink>
+                  <MenuLink href={`/org/${org}/products`}>Produtos</MenuLink>
                   {/* <MenuLink href={`/org/${org}/customers`}>Clientes</MenuLink>
                   <MenuLink href={`/org/${org}/products`}>Produtos</MenuLink> */}
                 </nav>

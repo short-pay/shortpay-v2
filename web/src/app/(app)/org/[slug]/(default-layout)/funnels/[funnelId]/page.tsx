@@ -1,28 +1,33 @@
+'use client'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-import { notFound } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { getFunnel } from '@/http/funnels/get-funnel'
-import { getCurrentOrg } from '@/auth/auth'
+
 import Steps from './tabs/steps'
 
+// import FunnelSettings from './_components/funnel-settings'
+import { useQuery } from '@tanstack/react-query'
 import FunnelSettings from './_components/funnel-settings'
 
-interface FunnelPageProps {
-  params: { funnelId: string }
-}
+export default function FunnelPage() {
+  const { slug: org, funnelId } = useParams<{
+    slug: string
+    funnelId: string
+  }>()
 
-export default async function FunnelPage({ params }: FunnelPageProps) {
-  const { funnelId } = params
+  const { data, isLoading } = useQuery({
+    queryKey: ['funnels'],
+    queryFn: () => getFunnel(funnelId),
+  })
+  const funnel = data?.funnel
 
-  const org = await getCurrentOrg()
-
-  const { funnel } = await getFunnel(funnelId)
   // const { pages } = await getFunnelPages(funnelId)
 
-  // console.log(funnel, 'funnel')
-
+  if (isLoading) return <h1>Carregando</h1>
+  // if (!funnel) return notFound()
   // if (!funnel) return redirect(`/org/${org}/funnels`)
-  if (!funnel) return notFound()
 
   return (
     <div className="px-4">
@@ -74,21 +79,23 @@ export default async function FunnelPage({ params }: FunnelPageProps) {
         </TabsList>
 
         <TabsContent value="steps">
-          <Steps funnel={funnel} slug={org!} pages={funnel.pages} />
+          {isLoading ? (
+            <h1>Carregando</h1>
+          ) : (
+            <Steps funnel={funnel!} slug={org!} />
+          )}
         </TabsContent>
         <TabsContent value="settings">
           <FunnelSettings
             slug={org!}
             defaultData={{
-              id: funnel.id,
-              name: funnel.name,
-              description: funnel.description || null,
-              liveProducts: funnel.liveProducts || '',
+              id: funnel!.id,
+              name: funnel!.name,
+              description: funnel!.description || null,
+              liveProducts: funnel!.liveProducts || '',
               slug: org!,
             }}
           />
-
-          {/* <Webhooks /> */}
         </TabsContent>
       </Tabs>
     </div>

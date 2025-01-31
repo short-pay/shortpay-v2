@@ -29,7 +29,6 @@ export default function FunnelSettings({
   slug,
   defaultData,
 }: FunnelSettingsProps) {
-  console.log(slug)
   // 1) React Query Hook
   const { data, isLoading, isError } = useQuery({
     // O `queryKey` deve ser um array único que identifique a requisição.
@@ -42,6 +41,8 @@ export default function FunnelSettings({
   // 2) Se a requisição der certo, `data` será do tipo: { products: any[] }, baseado em getProducts.
   // Aqui extraio `products` (ou retorno um array vazio como fallback).
   const products = data?.products ?? []
+
+  if (isLoading) return <h1>Carregando</h1>
 
   console.log({ products }, 'produtos')
 

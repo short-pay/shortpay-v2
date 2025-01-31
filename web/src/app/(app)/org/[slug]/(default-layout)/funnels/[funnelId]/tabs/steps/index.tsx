@@ -12,18 +12,14 @@ import {
 import type { Funnel, FunnelPage } from '@/@types/funnels'
 import { FunnelPageForm } from '../../form-funnel-page'
 import {
-  ArrowUpDown,
-  Check,
-  Copy,
-  ExternalLink,
-  LucideEdit,
-  Trash2,
+  Check, ExternalLink,
+  LucideEdit
 } from 'lucide-react'
 import Link from 'next/link'
 import FunnelPagePlaceholder from '@/components/icons/funnel-page-placeholder'
 import CustomModal from '@/components/global/custom-modal'
 import { Button } from '@/components/ui/button'
-import FunnelStepCard from '../../_components/funnel-step-card'
+import StepCard from './step-card'
 import {
   DragDropContext,
   Droppable,
@@ -35,16 +31,16 @@ import { AlertDialog } from '@/components/ui/alert-dialog'
 import { useEffect, useState } from 'react'
 import { useModal } from '@/providers/modal-provider'
 import { Badge } from '@/components/ui/badge'
+import { StepActions } from './step-actions'
 
 export interface StepsProps {
   funnel: Funnel
   slug: string
-  pages: FunnelPage[]
 }
 
-export default function Steps({ funnel, pages, slug }: StepsProps) {
+export default function Steps({ funnel, slug }: StepsProps) {
   const { setOpen } = useModal()
-  const funnelId = funnel.id
+  const {id: funnelId, pages} = funnel
 
   // Estado para controlar quais páginas estão sendo exibidas
   const [pagesState, setPagesState] = useState<FunnelPage[]>(pages)
@@ -103,8 +99,9 @@ useEffect(() => {
   }
   // unstable_noStore()
 
-  // TODO: Add delete page
 
+  // TODO: (feat): adicionar funcão de atualização, melhorar responsividade
+  
   return (
     <Card className="self-start h-[620px]">
       <CardContent className="p-0 flex lg:!flex-row flex-col h-full gap-2">
@@ -122,7 +119,11 @@ useEffect(() => {
                   onDragEnd={onDragEnd}
                   onDragStart={onDragStart}
                 >
-                  <Droppable droppableId="funnels" direction="vertical" isDropDisabled={false} // Adicione esta linha
+                  <Droppable 
+                    droppableId="funnels" 
+                    direction="vertical" 
+                    isDropDisabled={false} 
+                    isCombineEnabled={false}
                   >
                     {(provided) => (
                       <div
@@ -144,7 +145,7 @@ useEffect(() => {
                               setClickedPage(page)
                             }}
                           >
-                            <FunnelStepCard
+                            <StepCard
                               funnelPage={page}
                               index={idx}
                               activePage={page.id === clickedPage?.id}
@@ -227,7 +228,7 @@ useEffect(() => {
                   <CardDescription className="flex flex-col gap-4 mt-4">
                     {/* Preview e link da página */}
 
-                    <div className="flex gap-4 items-start">
+                    <div className="flex flex-col sm:flex-row gap-4 items-start">
                       <div className="border-2 rounded-lg sm:w-80 w-full overflow-clip">
                         <Link
                           href={`/org/${slug}/funnels/${funnelId}/editor/${clickedPage.id}`}
@@ -314,24 +315,7 @@ useEffect(() => {
                   </div>
 
                   {/* Ações Rápidas */}
-                  <div className="flex gap-2 justify-center">
-                    <Button variant="outline" size="sm" disabled>
-                      <Copy className="w-4 h-4 mr-2" />
-                      Duplicar
-                    </Button>
-                    <Button variant="outline" size="sm" disabled>
-                      <ArrowUpDown className="w-4 h-4 mr-2" />
-                      Mover
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir
-                    </Button>
-                  </div>
+                  <StepActions pageId={clickedPage.id} />
                 </CardContent>
               </Card>
             ) : (

@@ -1,7 +1,10 @@
 import { api } from '../api-client'
 
 interface GetProductsParams {
-  org: string
+  slug: string
+  searchTerm?: string
+  pageSize: number
+  pageIndex: number
 }
 
 export interface GetResponseProduct {
@@ -15,12 +18,30 @@ export interface GetResponseProduct {
     createdAt: string
     updatedAt: string
   }[]
+  totalCount: number
+  totalPages: number
+  currentPage: number
+  pageSize: number
 }
 
 export async function getProducts({
-  org,
+  pageIndex = 0,
+  pageSize = 10,
+  searchTerm = '',
+  slug,
 }: GetProductsParams): Promise<GetResponseProduct> {
-  const result = await api.get(`products/${org}`).json<GetResponseProduct>()
-  console.log({ result })
+  const result = await api
+    .get(`products/${slug}`, {
+      next: { tags: ['products'] },
+      searchParams: {
+        pageIndex,
+        pageSize,
+        searchTerm,
+      },
+    })
+    .json<GetResponseProduct>()
+
+  console.log(result)
+
   return result
 }

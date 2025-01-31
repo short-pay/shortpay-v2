@@ -69,7 +69,11 @@ export default function FunnelsPage() {
                 data?.funnels.map((funnel) => (
                   <TableRow key={funnel.id}>
                     <TableCell>
-                      <Link href={`/org/${slug}/funnels/${funnel.id}`}>
+                      <Link
+                        href={`/org/${slug}/funnels/${funnel.id}`}
+                        prefetch={false}
+                        className="font-medium text-primary outline-none hover:underline"
+                      >
                         {funnel.name}
                       </Link>
                     </TableCell>

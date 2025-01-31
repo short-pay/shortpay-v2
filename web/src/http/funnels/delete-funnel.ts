@@ -4,7 +4,9 @@ interface DeleteFunnelResponse {
   message: string
 }
 
-export async function deleteFunnel(funnelId: string): Promise<DeleteFunnelResponse> {
+export async function deleteFunnel(
+  funnelId: string,
+): Promise<DeleteFunnelResponse> {
   const result = await api
     .delete(`funnels/${funnelId}`)
     .json<DeleteFunnelResponse>()

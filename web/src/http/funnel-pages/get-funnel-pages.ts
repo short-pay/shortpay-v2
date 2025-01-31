@@ -15,7 +15,11 @@ export interface FunnelPage {
 }
 
 export async function getFunnelPages(funnelId: string): Promise<FunnelPage> {
-  const result = await api.get(`funnels/${funnelId}/pages`).json<FunnelPage>()
+  const result = await api
+    .get(`funnels/${funnelId}/pages`, {
+      next: { tags: ['funnelsPages'] },
+    })
+    .json<FunnelPage>()
 
   return result
 }

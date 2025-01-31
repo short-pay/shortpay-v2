@@ -25,7 +25,7 @@ export async function getFunnels({
   slug,
   page,
   size,
-  searchTerm,
+  searchTerm = '',
 }: GetFunnelsParams): Promise<GetFunnelsResponse> {
   const queryParams = new URLSearchParams({
     page: page.toString(),
@@ -36,6 +36,7 @@ export async function getFunnels({
   const result = await api
     .get(`funnels/${slug}`, {
       next: { tags: ['funnels'] },
+      searchParams: queryParams,
     })
     .json<GetFunnelsResponse>()
 

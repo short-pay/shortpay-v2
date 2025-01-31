@@ -21,7 +21,7 @@ interface GetFunnelResponse {
       name: string
       path: string
       type: 'GENERIC' | 'CHECKOUT' | 'LANDING_PAGE' | 'THANK_YOU'
-      content: Record<string, any>
+      content: string
       pathName?: string
       order?: number
       published: boolean

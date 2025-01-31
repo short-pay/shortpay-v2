@@ -3,8 +3,8 @@
 import { HTTPError } from 'ky'
 import { z } from 'zod'
 
-import { createFunnelPage } from '@/http/funnels/create-funnel-page'
-import { updateFunnelPage } from '@/http/funnels/update-funnel-page'
+import { createFunnelPage } from '@/http/funnel-pages/create-funnel-page'
+import { updateFunnelPage } from '@/http/funnel-pages/update-funnel-page'
 import { revalidateTag } from 'next/cache'
 
 const funnelPageSchema = z.object({
@@ -47,7 +47,7 @@ export async function createFunnelPageAction(data: FormData) {
       content,
     })
 
-    revalidateTag('funnels')
+    revalidateTag('funnelsPages')
     return {
       success: true,
       message: `Página "${name}" criada com sucesso!`,
