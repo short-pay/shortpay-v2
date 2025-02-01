@@ -3,8 +3,8 @@ import { api } from '../api-client'
 interface GetProductsParams {
   slug: string
   searchTerm?: string
-  pageSize: number
-  pageIndex: number
+  pageSize?: number
+  pageIndex?: number
 }
 
 export interface GetResponseProduct {
@@ -40,8 +40,6 @@ export async function getProducts({
       },
     })
     .json<GetResponseProduct>()
-
-  console.log(result)
 
   return result
 }

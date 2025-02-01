@@ -1,6 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
+import Image from 'next/image'
+import { useMutation } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import {
   Table,
   TableBody,
@@ -9,19 +12,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import Image from 'next/image'
-import { updateFunnelProducts } from '@/http/funnels/update-funnel-products'
-import { useRouter } from 'next/navigation'
-import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
+import { updateFunnelProducts } from '@/http/funnels/update-funnel-products'
 
 interface Product {
   id: string
   name: string
   description?: string
-  imageUrls: string[] // usado em <Image />
-  price: number // valor numérico
-  currency: string // tipo de moeda, ex: "USD", "BRL"
+  imageUrls: string[]
+  price: number
+  currency: string
   createdAt: string
   updatedAt: string
 }
@@ -30,113 +31,90 @@ interface FunnelProductsTableProps {
   products: Product[]
   defaultData: {
     id: string
-    liveProducts: string // JSON com [{ productId: string }]
+    liveProducts: string
     slug: string
   }
 }
 
-const FunnelProductsTable: React.FC<FunnelProductsTableProps> = ({
+export function FunnelProductsTable({
   products,
   defaultData,
-}) => {
+}: FunnelProductsTableProps) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-
-  // O liveProducts é um array de objetos com { productId }, se você não precisa de 'recurring'
   const [liveProducts, setLiveProducts] = useState<{ productId: string }[]>(
-    // converte a string JSON em array
     JSON.parse(defaultData.liveProducts || '[]'),
   )
 
-  // Salva/atualiza os produtos do funil
-  const handleSaveProducts = async () => {
-    setIsLoading(true)
-    await updateFunnelProducts({
-      funnelId: defaultData.id,
-      products: JSON.stringify(liveProducts),
-    })
-    setIsLoading(false)
-    router.refresh() // Atualiza a rota após salvar
-  }
+  const { mutate, isPending } = useMutation({
+    mutationKey: ['funnels'],
+    mutationFn: () =>
+      updateFunnelProducts({
+        funnelId: defaultData.id,
+        products: JSON.stringify(liveProducts),
+      }),
+    onSuccess: () => {
+      router.refresh()
+    },
+  })
 
-  // Adiciona ou remove o produto selecionado em liveProducts
-  const handleToggleProduct = (product: Product) => {
-    const alreadySelected = liveProducts.some((p) => p.productId === product.id)
-    if (alreadySelected) {
-      // se já existe, remove
-      setLiveProducts((prev) => prev.filter((p) => p.productId !== product.id))
-    } else {
-      // se não existe, adiciona
-      setLiveProducts((prev) => [...prev, { productId: product.id }])
-    }
+  const handleToggleProduct = (productId: string) => {
+    setLiveProducts((prev) =>
+      prev.some((p) => p.productId === productId)
+        ? prev.filter((p) => p.productId !== productId)
+        : [...prev, { productId }],
+    )
   }
 
   return (
-    <>
-      <Table className="bg-card border-[1px] border-border rounded-md">
-        <TableHeader className="rounded-md">
+    <div className="space-y-4">
+      <Table className="bg-card border border-border rounded-md">
+        <TableHeader>
           <TableRow>
-            <TableHead>Live</TableHead>
+            <TableHead className="w-[100px]">Live</TableHead>
             <TableHead>Image</TableHead>
             <TableHead>Name</TableHead>
-            {/* Se não vai mostrar nada sobre recorrência, pode remover esta coluna */}
-            <TableHead>Interval</TableHead>
             <TableHead className="text-right">Price</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody className="font-medium truncate">
-          {products.map((product) => {
-            const isChecked = liveProducts.some(
-              (item) => item.productId === product.id,
-            )
-
-            return (
-              <TableRow key={product.id}>
-                <TableCell>
-                  <Input
-                    type="checkbox"
-                    className="w-4 h-4"
-                    checked={isChecked}
-                    onChange={() => handleToggleProduct(product)}
+        <TableBody>
+          {products.map((product) => (
+            <TableRow key={product.id}>
+              <TableCell>
+                <Checkbox
+                  checked={liveProducts.some((p) => p.productId === product.id)}
+                  onCheckedChange={() => handleToggleProduct(product.id)}
+                />
+              </TableCell>
+              <TableCell>
+                {product.imageUrls[0] ? (
+                  <Image
+                    src={product.imageUrls[0]}
+                    alt={product.name}
+                    width={60}
+                    height={60}
+                    className="object-cover rounded-md"
                   />
-                </TableCell>
-
-                <TableCell>
-                  {product.imageUrls && product.imageUrls.length > 0 ? (
-                    <Image
-                      alt="Product Image"
-                      height={60}
-                      width={60}
-                      src={product.imageUrls[0]}
-                    />
-                  ) : (
-                    <span>No image</span>
-                  )}
-                </TableCell>
-
-                <TableCell>{product.name}</TableCell>
-
-                {/* Removido default_price. Se não tiver nada sobre interval, deixar fixo ou remover */}
-                <TableCell>One-time</TableCell>
-
-                <TableCell className="text-right">
-                  {/* Exibe preço e moeda */}
-                  {product.currency} {product.price}
-                </TableCell>
-              </TableRow>
-            )
-          })}
+                ) : (
+                  <div className="w-[60px] h-[60px] bg-muted rounded-md flex items-center justify-center text-muted-foreground">
+                    No image
+                  </div>
+                )}
+              </TableCell>
+              <TableCell>{product.name}</TableCell>
+              <TableCell className="text-right">
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: product.currency,
+                }).format(product.price)}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
-
-      <Button
-        disabled={isLoading}
-        onClick={handleSaveProducts}
-        className="mt-4"
-      >
-        Save Products
+      <Button onClick={() => mutate()} disabled={isPending}>
+        {isPending ? 'Saving...' : 'Save Products'}
       </Button>
-    </>
+    </div>
   )
 }
 

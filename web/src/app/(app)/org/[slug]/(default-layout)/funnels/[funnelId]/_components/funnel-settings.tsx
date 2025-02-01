@@ -34,8 +34,7 @@ export default function FunnelSettings({
     // O `queryKey` deve ser um array único que identifique a requisição.
     // Aqui uso 'products' e o `slug` para cada organização.
     queryKey: ['products', slug],
-    queryFn: () => getProducts({ org: slug }),
-    // Você pode incluir opções como: refetchInterval, staleTime, etc.
+    queryFn: () => getProducts({ slug }),
   })
 
   // 2) Se a requisição der certo, `data` será do tipo: { products: any[] }, baseado em getProducts.
@@ -43,8 +42,6 @@ export default function FunnelSettings({
   const products = data?.products ?? []
 
   if (isLoading) return <h1>Carregando</h1>
-
-  console.log({ products }, 'produtos')
 
   return (
     <div className="flex gap-4 flex-col xl:!flex-row">
@@ -67,7 +64,7 @@ export default function FunnelSettings({
             <FunnelProductsTable
               defaultData={{
                 id: defaultData.id,
-                liveProducts: defaultData.liveProducts || '', // força string
+                liveProducts: defaultData.liveProducts || '',
                 slug: defaultData.slug,
               }}
               products={products}
