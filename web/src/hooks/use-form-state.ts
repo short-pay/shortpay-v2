@@ -28,12 +28,13 @@ export function useFormState(
       const state = await action(data)
 
       if (state.success) {
-        requestFormReset(form)
-
-        if (onSuccess) {
-          await onSuccess()
+          //passei a requisição de resetar o form para algo mais simples e manual com form.reset(), evitando erros de versoes futuras
+          form.reset(); 
+          
+          if(onSuccess){
+            await onSuccess()
+          }
         }
-      }
 
       setFormState(state)
     })
