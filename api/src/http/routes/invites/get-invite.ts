@@ -7,7 +7,9 @@ import { roleSchema } from '../orgs/get-organizations'
 import { BadRequestError } from '@/http/_errors/bad-request-error'
 
 export async function getInvite(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().get(
+  app
+    .withTypeProvider<ZodTypeProvider>()
+    .get(
     '/invites/:inviteId',
     {
       schema: {

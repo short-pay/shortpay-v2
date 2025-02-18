@@ -45,6 +45,8 @@ import { getFunnel } from './http/routes/funnels/get-funnel'
 import { createFunnelPage } from './http/routes/funnel-pages/create-funnel-page'
 import { getFunnelPages } from './http/routes/funnel-pages/get-funnels-pages'
 import { deleteFunnelPages } from './http/routes/funnel-pages/delete-funnel-pages'
+import { getFunnelPage } from './http/routes/funnel-pages/get-funnel-page'
+import { createNotification } from './http/routes/notification/create-notification'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -144,7 +146,11 @@ app.register(getFunnel)
 // Funnels Page
 app.register(createFunnelPage)
 app.register(getFunnelPages)
+app.register(getFunnelPage)
 app.register(deleteFunnelPages)
+
+// Notification
+app.register(createNotification)
 
 
 

@@ -3,24 +3,24 @@ import { auth } from '@/http/middlewares/auth'
 import { z } from 'zod'
 import type { FastifyInstance } from 'fastify'
 import type { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { BadRequestError } from '@/http/_errors/bad-request-error'
 
-export async function getFunnelPages(app: FastifyInstance) {
+export async function getFunnelPage(app: FastifyInstance) {
   app
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .get(
-      '/funnels/:funnelId/pages',
+      '/funnels/:id/page',
       {
         schema: {
           tags: ['Funnel Pages'],
           summary: 'Fetch all pages for a funnel',
           params: z.object({
-            funnelId: z.string().uuid('Invalid funnel ID format'),
+            id: z.string(),
           }),
           response: {
             200: z.object({
-              pages: z.array(
-                z.object({
+              page: z.object({
                   id: z.string(),
                   name: z.string(),
                   type: z.enum([
@@ -34,22 +34,22 @@ export async function getFunnelPages(app: FastifyInstance) {
                   path: z.string(),
                   content: z.any(),
                 }),
-              ),
             }),
           },
         },
       },
-      async (request, reply) => {
-        const { funnelId } = request.params
+      async (request) => {
+        const { id } = request.params
 
-        const pages = await prisma.funnelPage.findMany({
-          where: { funnelId },
-          orderBy: { order: 'asc' },
+        const page = await prisma.funnelPage.findUnique({
+          where: { id },
         })
 
-        return reply.status(200).send({
-          pages,
-        })
+        if (!page) {
+               throw new BadRequestError('Page not found')
+             }
+
+        return { page }
       },
     )
 }
