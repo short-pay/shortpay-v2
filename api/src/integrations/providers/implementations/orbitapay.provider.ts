@@ -1,5 +1,5 @@
 // src/payments/providers/implementations/orbitapay.provider.ts
-import type { PaymentProvider } from '../interfaces/provider.interface'
+import type { PaymentConfig, PaymentProvider } from '../interfaces/provider.interface'
 import type { TransactionPayload } from '../../interfaces/transaction.interface'
 import axios from 'axios'
 
@@ -8,9 +8,9 @@ export class OrbitaPayProvider implements PaymentProvider {
   private secretKey: string
   private apiKey: string
 
-  constructor(secretKey: string, apiKey: string) {
-    this.secretKey = secretKey
-    this.apiKey = apiKey
+  constructor(config: PaymentConfig) {
+    this.secretKey = config.secret_key
+    this.apiKey = config.api_key
   }
 
   async processTransaction(payload: TransactionPayload): Promise<any> {
