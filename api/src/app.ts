@@ -1,5 +1,4 @@
 import fastify from 'fastify'
-
 import { errorHandler } from './http/middlewares/error-handler'
 import {
   jsonSchemaTransform,
@@ -7,44 +6,23 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
-import { authenticateWithPassword } from './http/routes/auth/authenticate-with-password'
-import { createAccount } from './http/routes/auth/create-account'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastifyJwt from '@fastify/jwt'
 import { env } from './env'
-import { getProfile } from './http/routes/auth/get-profile'
-import { createOrganization } from './http/routes/orgs/create-organization'
-import { getOrganization } from './http/routes/orgs/get-organization'
-import { getOrganizations } from './http/routes/orgs/get-organizations'
-import { shutdownOrganization } from './http/routes/orgs/shutdown-organization'
-import { transferOrganization } from './http/routes/orgs/transfer-organization'
-import { updateOrganization } from './http/routes/orgs/update-organization'
-import { getMembership } from './http/routes/orgs/get-membership'
-import { createProduct } from './http/routes/products/create-product'
-import { deleteProduct } from './http/routes/products/delete-product'
-import { getProduct } from './http/routes/products/get-product'
-import { getProducts } from './http/routes/products/get-products'
-import { updateProduct } from './http/routes/products/update-product'
-import { CreateIntegrationToGateway } from './http/routes/gateways/create-integration-to-gateways'
-import { DeleteIntegrationToCheckout } from './http/routes/gateways/delete-integration-to-checkout'
-import { UpdateIntegrationToGateway } from './http/routes/gateways/update-integration-to-gateway'
-import { createTransaction } from './http/routes/transactions/create-transaction'
-import { requestPasswordRecover } from './http/routes/auth/request-password-recover'
-import { resetPassword } from './http/routes/auth/reset-password'
 import { fastifyRawBody } from 'fastify-raw-body'
-import { createCheckout } from './http/routes/checkouts/create-checkout'
-import { postbackTransaction } from './http/routes/webhooks/postback-transaction'
-import { GetIntegrationsToGateways } from './http/routes/gateways/get-integrations-to-gateways'
-import { getCheckout } from './http/routes/checkouts/get-checkout'
-import { listCheckouts } from './http/routes/checkouts/list-checkouts'
 import fastifyCors from '@fastify/cors'
-import { createFunnel } from './http/routes/funnels/create-funnel'
-import { getFunnels } from './http/routes/funnels/get-funnels'
-import { getFunnel } from './http/routes/funnels/get-funnel'
-import { createFunnelPage } from './http/routes/funnel-pages/create-funnel-page'
-import { getFunnelPages } from './http/routes/funnel-pages/get-funnels-pages'
-import { deleteFunnelPages } from './http/routes/funnel-pages/delete-funnel-pages'
+import { registerAuthRoutes } from './http/routes/auth'
+import { registerOrganizationRoutes } from './http/routes/orgs'
+import { registerGatewaysRoutes } from './http/routes/gateways'
+import { registerProductRoutes } from './http/routes/products'
+import { registerTransactionRoutes } from './http/routes/transactions'
+import { registerCheckoutRoutes } from './http/routes/checkouts'
+import { registerFunnelsRoutes } from './http/routes/funnels'
+import { registerFunnelPageRoutes } from './http/routes/funnel-pages'
+import { registerWebhookRoutes } from './http/routes/webhooks'
+import { registerInviteRoutes } from './http/routes/invites'
+import { registerMembersRoutes } from './http/routes/members'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -86,70 +64,37 @@ app.setValidatorCompiler(validatorCompiler)
 app.setErrorHandler(errorHandler)
 
 // Auth
-app.register(createAccount)
-app.register(authenticateWithPassword)
-app.register(getProfile)
-app.register(requestPasswordRecover)
-app.register(resetPassword)
+registerAuthRoutes(app)
 
 // Organizations
-app.register(createOrganization)
-app.register(getOrganizations)
-app.register(getOrganization)
-app.register(shutdownOrganization)
-app.register(transferOrganization)
-app.register(updateOrganization)
-app.register(getMembership)
+registerOrganizationRoutes(app)
 
 // Gateways
-app.register(CreateIntegrationToGateway)
-app.register(DeleteIntegrationToCheckout)
-app.register(UpdateIntegrationToGateway)
-app.register(GetIntegrationsToGateways)
+registerGatewaysRoutes(app)
 
 // Products
-app.register(createProduct)
-app.register(deleteProduct)
-app.register(getProduct)
-app.register(getProducts)
-app.register(updateProduct)
-
-// Invites
-// app.register(acceptInvite)
-// app.register(createInvite)
-// app.register(getInvite)
-// app.register(getInvites)
-// app.register(getPendingInvites)
-// app.register(rejectInvite)
-// app.register(revokeInvite)
-
-// Members
-// app.register(getMembers)
-// app.register(removeMember)
-// app.register(updateMember)
+registerProductRoutes(app)
 
 // Transactions
-app.register(createTransaction)
+registerTransactionRoutes(app)
 
 // Checkouts
-app.register(createCheckout)
-app.register(listCheckouts)
-app.register(getCheckout)
+registerCheckoutRoutes(app)
 
 // Funnels
-app.register(createFunnel)
-app.register(getFunnels)
-app.register(getFunnel)
+registerFunnelsRoutes(app)
 
 // Funnels Page
-app.register(createFunnelPage)
-app.register(getFunnelPages)
-app.register(deleteFunnelPages)
-
-
+registerFunnelPageRoutes(app)
 
 // Webhooks
-app.register(postbackTransaction)
+registerWebhookRoutes(app)
+
+// Invites
+// registerInviteRoutes(app)
+
+// Members
+// registerMembersRoutes(app)
 
 // Billing
 // app.register(getOrganizationBilling)
