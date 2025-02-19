@@ -13,6 +13,8 @@ export class StripeProvider implements PaymentProvider {
 
   async processTransaction(payload: TransactionPayload): Promise<any> {
     console.log(`Mocking a transaction for Stripe with payload:`, payload)
+    console.log(this.secretKey)
+    console.log(this.apiKey)
 
     return {
       status: 'success',

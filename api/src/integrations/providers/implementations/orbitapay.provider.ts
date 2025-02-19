@@ -2,6 +2,7 @@
 import type { PaymentConfig, PaymentProvider } from '../interfaces/provider.interface'
 import type { TransactionPayload } from '../../interfaces/transaction.interface'
 import axios from 'axios'
+import { env } from '@/env'
 
 export class OrbitaPayProvider implements PaymentProvider {
   readonly providerName = 'orbitaPayV2Provider'
@@ -15,7 +16,7 @@ export class OrbitaPayProvider implements PaymentProvider {
 
   async processTransaction(payload: TransactionPayload): Promise<any> {
     const authHeader = `Basic ${Buffer.from(`${this.secretKey}:${this.apiKey}`).toString('base64')}`
-    const endpoint = 'https://api.dashboard.orbitapay.com.br/v1/transactions'
+    const endpoint = env.ORBITA_PAY_ENDPOINT
 
     const response = await axios.post(endpoint, payload, {
       headers: {
