@@ -10,7 +10,7 @@ export async function updateFunnelPageRoute(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .put(
-      '/funnels/:funnelId/pages/:pageId',
+      '/funnels/:pageId/page',
       {
         schema: {
           tags: ['Funnel Pages'],
@@ -64,12 +64,12 @@ export async function updateFunnelPageRoute(app: FastifyInstance) {
           },
         })
 
-        return reply.status(200).send({
+        return {
           id: updatedPage.id,
           name: updatedPage.name,
           type: updatedPage.type,
           order: updatedPage.order,
-        })
+        }
       },
     )
 }
