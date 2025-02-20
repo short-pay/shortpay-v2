@@ -181,6 +181,7 @@ model Product {
 model GatewayConfig {
   id             String   @id @default(uuid())
   provider       String // Provedor do gateway (ex.: Stripe, Órbita)
+  endpoint       String
   description    String?
   apiKey         String   @map("api_key")
   secretKey      String   @map("secret_key")

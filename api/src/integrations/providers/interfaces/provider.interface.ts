@@ -7,3 +7,9 @@ export interface PaymentProvider {
   // Processa a transação depois de o payload ter sido preparado pelo método de pagamento
   processTransaction(payload: TransactionPayload): Promise<any>
 }
+
+
+export interface PaymentConfig {
+  secret_key: string,
+  api_key: string
+}

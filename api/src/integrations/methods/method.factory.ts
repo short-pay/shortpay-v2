@@ -4,7 +4,6 @@ import { PixMethod } from './implementations/pix.method'
 import { CardMethod } from './implementations/card.method'
 import { BoletoMethod } from './implementations/boleto.method'
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class PaymentMethodFactory {
   static create(methodName: string): PaymentMethod {
     switch (methodName) {

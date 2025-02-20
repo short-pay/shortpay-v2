@@ -1,20 +1,28 @@
-// src/payments/providers/provider.factory.ts
-import type { PaymentProvider } from './interfaces/provider.interface'
-import { OrbitaPayProvider } from './implementations/orbitapay.provider'
+import { PaymentConfig } from "./interfaces/provider.interface";
+import { StripeProvider } from "./implementations/stripe.provider";
+import { GenericPaymentProvider } from "./implementations/generic.provider";
 
-// biome-ignore lint/complexity/noStaticOnlyClass: <explanation>
 export class PaymentProviderFactory {
-  static create(
-    providerName: string,
-    secretKey: string,
-    apiKey: string,
-  ): PaymentProvider {
-    switch (providerName) {
-      case 'orbitaPayV2Provider':
-        return new OrbitaPayProvider(secretKey, apiKey)
-      // Adicione outros providers aqui
-      default:
-        throw new Error(`Unsupported provider: ${providerName}`)
+    static providers: Record<string, any> = {};
+
+    static register(providerName: string, providerClass: any) {
+        this.providers[providerName.toLowerCase()] = providerClass;
     }
-  }
+
+    static create(providerName: string, providerEndpoint: string, config: PaymentConfig) {
+        if (Object.keys(this.providers).length === 0) {
+            this.initializeProviders();
+        }
+
+        const ProviderClass = this.providers[providerName.toLowerCase()];
+        if (!ProviderClass) {
+            throw new Error(`Provedor de pagamento '${providerName}' não registrado`);
+        }
+        return new ProviderClass(config, providerName, providerEndpoint);
+    }
+
+    private static initializeProviders() {
+        this.register("orbitaPayV2", GenericPaymentProvider);
+        this.register("stripe", StripeProvider);
+    }
 }

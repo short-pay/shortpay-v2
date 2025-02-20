@@ -60,11 +60,12 @@ export async function createTransaction(app: FastifyInstance) {
         // Cria o PaymentMethod (ex: Pix, Cartão, Boleto)
         const method = PaymentMethodFactory.create(paymentMethod)
 
+
         // Cria o Provider (ex: OrbitaPay, Stripe)
         const provider = PaymentProviderFactory.create(
           gatewayConfig.provider,
-          secretKey,
-          apiKey,
+          gatewayConfig.endpoint,
+          {secret_key: secretKey, api_key: apiKey},
         )
 
         // Monta o payload base
