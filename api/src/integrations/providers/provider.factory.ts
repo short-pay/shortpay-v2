@@ -1,6 +1,6 @@
 import { PaymentConfig } from "./interfaces/provider.interface";
-import { OrbitaPayProvider } from "./implementations/orbitapay.provider";
 import { StripeProvider } from "./implementations/stripe.provider";
+import { GenericPaymentProvider } from "./implementations/generic.provider";
 
 export class PaymentProviderFactory {
     static providers: Record<string, any> = {};
@@ -9,7 +9,7 @@ export class PaymentProviderFactory {
         this.providers[providerName.toLowerCase()] = providerClass;
     }
 
-    static create(providerName: string, config: PaymentConfig) {
+    static create(providerName: string, providerEndpoint: string, config: PaymentConfig) {
         if (Object.keys(this.providers).length === 0) {
             this.initializeProviders();
         }
@@ -18,11 +18,11 @@ export class PaymentProviderFactory {
         if (!ProviderClass) {
             throw new Error(`Provedor de pagamento '${providerName}' não registrado`);
         }
-        return new ProviderClass(config);
+        return new ProviderClass(config, providerName, providerEndpoint);
     }
 
     private static initializeProviders() {
-        this.register("orbitaPayV2", OrbitaPayProvider);
+        this.register("orbitaPayV2", GenericPaymentProvider);
         this.register("stripe", StripeProvider);
     }
 }
