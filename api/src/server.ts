@@ -1,6 +1,4 @@
-import 'module-alias/register'
-
-import { app } from '@/app'
+import { app } from '@/http/app'
 import { env } from '@/env'
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {

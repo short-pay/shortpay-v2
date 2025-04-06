@@ -7,6 +7,6 @@ export function fromCents(cents: number): number {
 }
 
 export function isValidCurrency(currency: string): boolean {
-  const supportedCurrencies = ['BRL', 'USD', 'EUR'] // Pode expandir dinamicamente
+  const supportedCurrencies = ['BRL', 'USD', 'EUR']
   return supportedCurrencies.includes(currency)
 }

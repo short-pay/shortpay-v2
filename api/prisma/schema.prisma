@@ -22,37 +22,23 @@ enum AccountProvider {
 }
 
 enum SubscriptionType {
-  FREE
+  TRIAL
   BASIC
   PRO
+  BUSINESS
 }
 
 enum TokenType {
   PASSWORD_RECOVER
 }
 
-enum TransactionStatus {
-  PENDING
-  SUCCESS
-  FAILED
-}
-
-enum PaymentMethod {
-  PIX
-  CREDIT_CARD
-  BOLETO
-}
-
-// Models
-
 model User {
-  id           String           @id @default(uuid())
+  id           String    @id @default(uuid())
   name         String?
-  email        String           @unique
-  passwordHash String?          @map("password_hash")
-  avatarUrl    String?          @map("avatar_url")
+  email        String    @unique
+  passwordHash String?   @map("password_hash")
+  avatarUrl    String?   @map("avatar_url")
   birthday     DateTime?
-  subscription SubscriptionType @default(FREE)
 
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
@@ -64,9 +50,6 @@ model User {
   member_on          Member[]
   owns_organizations Organization[]
   subscriptions      Subscription[]
-  payments           Payment[]
-  Media              Media[]
-  Automation         Automation[]
 
   @@map("users")
 }
@@ -147,224 +130,12 @@ model Organization {
   products            Product[]
   notifications       Notification[]
   gatewayConfigs      GatewayConfig[]
-  checkouts           Checkout[]
-  invoices            Invoice[]
-  payments            Payment[]
-  subscriptions       Subscription[]
-  Funnel              Funnel[]
-  Menu                Menu[]
+
+  subscriptions Subscription[]
+  customers     Customer[]
 
   @@index([slug])
   @@map("organizations")
-}
-
-model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  currency    String
-  imageUrls   String[] @map("image_urls")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String       @map("organization_id")
-
-  gatewayTransactions GatewayTransaction[]
-  checkout            Checkout?            @relation(fields: [checkoutId], references: [id], onDelete: SetNull)
-  checkoutId          String?
-
-  @@map("products")
-}
-
-model GatewayConfig {
-  id             String   @id @default(uuid())
-  provider       String // Provedor do gateway (ex.: Stripe, Órbita)
-  endpoint       String
-  description    String?
-  apiKey         String   @map("api_key")
-  secretKey      String   @map("secret_key")
-  publicKey      String?  @map("public_key")
-  webhookSecret  String?  @map("webhook_secret")
-  installmentFee Float?
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String       @map("organization_id")
-
-  gatewayTransactions GatewayTransaction[]
-
-  @@unique([provider, organizationId]) // Garante unicidade do provedor por organização
-  @@map("gateway_configs")
-}
-
-model GatewayTransaction {
-  id            String  @id @default(uuid())
-  transactionId String?
-
-  amount    Float
-  currency  String
-  status    String        @default("PENDING")
-  method    PaymentMethod
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @default(now()) @updatedAt @map("updated_at")
-
-  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  productId String?  @map("product_id")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String       @map("organization_id")
-
-  gatewayConfig   GatewayConfig @relation(fields: [gatewayConfigId], references: [id], onDelete: Cascade)
-  gatewayConfigId String        @map("gateway_config_id")
-  checkout        Checkout?     @relation(fields: [checkoutId], references: [id], onDelete: SetNull)
-  checkoutId      String?
-
-  @@map("gateway_transactions")
-}
-
-enum AutomationTriggerType {
-  CONTACT_FORM
-}
-
-enum AutomationActionType {
-  CREATE_CONTACT
-}
-
-enum MediaType {
-  IMAGE
-  VIDEO
-}
-
-model Checkout {
-  id                String  @id @default(uuid())
-  name              String
-  description       String?
-  content           Json    @default("{}")
-  previewImage      String?
-  currency          String  @default("BRL") // Moeda original
-  convertedCurrency String // Moeda convertida
-  convertedAmount   Float // Valor convertido
-  published         Boolean @default(false) // Indica se o funil está publicado
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String       @map("organization_id")
-
-  funnel             Funnel?              @relation(fields: [funnelId], references: [id], onDelete: SetNull)
-  funnelId           String?
-  multiStepPages     FunnelPage[] // Representa páginas de checkout multi-etapas
-  Product            Product[]
-  GatewayTransaction GatewayTransaction[]
-
-  @@map("checkouts")
-}
-
-model Funnel {
-  id            String  @id @default(uuid())
-  name          String
-  description   String?
-  subDomainName String? @unique
-  published     Boolean @default(false)
-  liveProducts  String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String       @map("organization_id")
-
-  pages         FunnelPage[] // Relacionamento com páginas do funil
-  checkouts     Checkout[] // Checkouts associados ao funil
-  notifications Notification[]
-
-  @@map("funnels")
-}
-
-enum FunnelPageType {
-  GENERIC
-  CHECKOUT
-  LANDING_PAGE
-  THANK_YOU
-}
-
-model FunnelPage {
-  id           String         @id @default(uuid())
-  name         String
-  path         String         @unique
-  pathName     String?
-  order        Int
-  type         FunnelPageType @default(GENERIC) // Enum para tipos de páginas
-  content      Json           @default("{}")
-  previewImage String?
-  metadata     Json?          @default("{}") // Dados de SEO ou metadados
-  published    Boolean        @default(false) // Indica se a página está publicada
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  funnel     Funnel?   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
-  funnelId   String?   @map("funnel_id")
-  Checkout   Checkout? @relation(fields: [checkoutId], references: [id])
-  checkoutId String?
-
-  @@map("funnelPages")
-}
-
-model Template {
-  id           String   @id @default(uuid())
-  name         String // Nome do template
-  description  String?
-  content      Json     @default("{}") // Layout do template
-  previewImage String? // Imagem de pré-visualização
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  @@map("templates")
-}
-
-model Media {
-  id        String    @id @default(uuid())
-  name      String
-  type      MediaType
-  url       String    @unique
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String    @map("user_id")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-
-  @@map("media")
-}
-
-model Automation {
-  id          String                @id @default(uuid())
-  name        String
-  triggerType AutomationTriggerType
-  actions     AutomationAction[]
-  details     Json?                 @default("{}") // Configurações adicionais
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("automations")
-}
-
-model AutomationAction {
-  id           String               @id @default(uuid())
-  name         String
-  type         AutomationActionType
-  order        Int
-  automation   Automation           @relation(fields: [automationId], references: [id], onDelete: Cascade)
-  automationId String               @map("automation_id")
-  createdAt    DateTime             @default(now()) @map("created_at")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
-
-  @@map("automation_actions")
 }
 
 model Integration {
@@ -390,62 +161,15 @@ model Notification {
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @map("organization_id")
-  Funnel         Funnel?      @relation(fields: [funnelId], references: [id])
 
   @@index([organizationId])
   @@index([funnelId])
   @@map("notifications")
 }
 
-model Menu {
-  id    String @id @default(uuid())
-  name  String
-  icon  String
-  link  String
-  order Int    @default(0) // Ordem no menu
-
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String       @map("organization_id")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-
-  @@map("menus")
-}
-
-model Payment {
-  id        String            @id @default(uuid())
-  amount    Float
-  currency  String
-  method    PaymentMethod
-  status    TransactionStatus @default(PENDING)
-  createdAt DateTime          @default(now()) @map("created_at")
-
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId String? @map("user_id")
-
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String?       @map("organization_id")
-
-  @@map("payments")
-}
-
-model Invoice {
-  id        String   @id @default(uuid())
-  amount    Float
-  currency  String
-  dueDate   DateTime
-  isPaid    Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String?       @map("organization_id")
-
-  @@map("invoices")
-}
-
 model Subscription {
   id        String           @id @default(uuid())
-  type      SubscriptionType @default(FREE)
+  type      SubscriptionType @default(TRIAL)
   startDate DateTime
   endDate   DateTime?
   isActive  Boolean          @default(true)
@@ -458,4 +182,114 @@ model Subscription {
   organizationId String?
 
   @@map("subscriptions")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  currency    String
+  imageUrls   String[] @map("image_urls")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  gatewayTransactions GatewayTransaction[]
+
+  @@map("products")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  document  String   @unique
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  transactions GatewayTransaction[]
+}
+
+enum GatewayEngine {
+  PAYMAKER
+  HOPI
+  SHIELD
+}
+
+model Gateway {
+  id          String        @id @default(uuid())
+  name        String
+  provider    String        @unique
+  domain      String        @unique
+  engine      GatewayEngine
+  description String?
+  iconUrl     String?
+  isGlobal    Boolean       @default(false)
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  configs GatewayConfig[]
+}
+
+model GatewayConfig {
+  id String @id @default(uuid())
+
+  description    String?
+  apiKey         String   @map("api_key")
+  secretKey      String   @map("secret_key")
+  publicKey      String?  @map("public_key")
+  webhookSecret  String?  @map("webhook_secret")
+  installmentFee Float?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  gatewayTransactions GatewayTransaction[]
+  Gateway             Gateway              @relation(fields: [gatewayId], references: [id])
+  gatewayId           String
+
+  @@unique([organizationId])
+  @@map("gateway_configs")
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  BOLETO
+}
+
+model GatewayTransaction {
+  id String @id @default(uuid())
+
+  amount    Float
+  currency  String
+  status    TransactionStatus @default(PENDING)
+  method    PaymentMethod
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @default(now()) @updatedAt @map("updated_at")
+
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId String?  @map("product_id")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id")
+
+  gatewayConfig   GatewayConfig @relation(fields: [gatewayConfigId], references: [id], onDelete: Cascade)
+  gatewayConfigId String        @map("gateway_config_id")
+  Customer        Customer?     @relation(fields: [customerId], references: [id])
+  customerId      String?
+
+  @@map("gateway_transactions")
 }
