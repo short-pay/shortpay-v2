@@ -31,6 +31,7 @@ export const gateways: GatewaySeedData[] = [
     domain: 'corepay.net',
     isGlobal: false,
     engine: GatewayEngine.PAYMAKER,
+    // https://app.corepaybr.com/docs
   },
   {
     name: 'Venuz Pay',
@@ -41,6 +42,7 @@ export const gateways: GatewaySeedData[] = [
     isGlobal: true,
     engine: GatewayEngine.PAYMAKER,
     domain: '',
+    // https://app.venuzpay.com/docs
   },
 
   // === HOPI ===
@@ -63,6 +65,7 @@ export const gateways: GatewaySeedData[] = [
     isGlobal: false,
     engine: GatewayEngine.HOPI,
     domain: '',
+    // https://payoutbr.readme.io/reference/introducao
   },
   {
     name: 'Pagou.Aí',
@@ -71,8 +74,9 @@ export const gateways: GatewaySeedData[] = [
       'Pagou.Aí é uma plataforma de pagamentos inteligentes e intuitiva.',
     iconUrl: '/icons/gateways/pagouai.ico',
     domain: 'pagou.ai',
-    isGlobal: false,
+    isGlobal: true,
     engine: GatewayEngine.HOPI,
+    // https://pagouai.readme.io/reference/introducao // **
   },
 
   // === SHIELD ===

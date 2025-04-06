@@ -21,6 +21,7 @@ async function main() {
         iconUrl: gateway.iconUrl,
         isGlobal: gateway.isGlobal,
         engine: gateway.engine,
+        domain: gateway.domain,
         createdAt: new Date(),
       },
     })
