@@ -290,6 +290,8 @@ model GatewayTransaction {
   gatewayConfigId String        @map("gateway_config_id")
   Customer        Customer?     @relation(fields: [customerId], references: [id])
   customerId      String?
+  externalId      String?       @map("external_id")
+  metadata        Json?
 
   @@map("gateway_transactions")
 }

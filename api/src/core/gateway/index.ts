@@ -35,6 +35,8 @@ export async function createTransaction(
       status: result.success ? 'SUCCESS' : 'FAILED',
       gatewayConfigId: config.id,
       organizationId: config.organizationId,
+      externalId: result.transactionId,
+      metadata: result.extraData || {},
     },
   })
 
