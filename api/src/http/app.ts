@@ -17,7 +17,7 @@ import { registerAuthRoutes } from './routes/auth'
 import { registerOrganizationRoutes } from './routes/orgs'
 import { registerGatewaysRoutes } from './routes/gateways'
 import { registerProductRoutes } from './routes/products'
-import { registerTransactionRoutes } from './routes/transactions'
+// import { registerTransactionRoutes } from './routes/transactions'
 import { registerWebhookRoutes } from './routes/webhooks'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
@@ -72,7 +72,7 @@ registerGatewaysRoutes(app)
 registerProductRoutes(app)
 
 // Transactions
-registerTransactionRoutes(app)
+// registerTransactionRoutes(app)
 
 // Webhooks
 registerWebhookRoutes(app)

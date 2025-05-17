@@ -17,9 +17,9 @@ const envSchemas = z.object({
   POSTBACK_URL_DEV: z.string(),
   POSTBACK_URL_PROD: z.string(),
   AES_ENCRYPTION_KEY: z.string(),
-  SECRET_KEY: z.string(),
-  PUBLIC_KEY: z.string(),
-  ORBITA_PAY_ENDPOINT: z.string()
+  // SECRET_KEY: z.string(),
+  // PUBLIC_KEY: z.string(),
+  // ORBITA_PAY_ENDPOINT: z.string()
 })
 
 const _env = envSchemas.safeParse(process.env)
