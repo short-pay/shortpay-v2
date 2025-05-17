@@ -1,85 +1,122 @@
-import { TrackingMiddleware } from './tracking-middleware';
-import { UTMifyService } from './utmify-service';
-import type { GatewayAdapter, TransactionPayload, TransactionResult } from '@/core/types/types';
+import type { GatewayAdapter, TransactionPayload, TransactionResult } from '@/core/types/types'
+import { TrackingMiddleware } from './tracking-middleware'
+import axios from 'axios'
 
 /**
- * Implementação específica do middleware de tracking para UTMify
+ * Middleware para integração com o serviço UTMify
  * 
- * Esta classe estende o TrackingMiddleware para implementar
- * a integração específica com o serviço UTMify.
+ * Esta classe implementa a integração com o serviço UTMify para
+ * rastreamento de conversões e atribuição de campanhas.
  */
 export class UTMifyMiddleware extends TrackingMiddleware {
-  private utmifyService: UTMifyService;
+  private readonly token: string
+  private readonly apiUrl: string = 'https://api.utmify.com/v1/conversions'
 
   constructor(
     gateway: GatewayAdapter,
-    utmifyConfig: {
-      apiToken: string;
-      endpoint?: string;
+    config: {
+      token: string;
+      apiUrl?: string;
     }
   ) {
-    super(gateway);
-    this.utmifyService = new UTMifyService(utmifyConfig);
+    super(gateway)
+    this.token = config.token
+    
+    if (config.apiUrl) {
+      this.apiUrl = config.apiUrl
+    }
   }
 
   /**
-   * Implementação específica para tracking com UTMify
+   * Envia dados de transação para o UTMify
+   * 
+   * @param data Dados da transação
+   * @param result Resultado da transação
    */
   protected async trackTransaction(
     data: TransactionPayload,
     result: TransactionResult
   ): Promise<void> {
-    // Extrai parâmetros de tracking do metadata, se existirem
-    const trackingParams = this.extractTrackingParams(data);
+    // Se não há token configurado, não tenta enviar
+    if (!this.token) {
+      console.log('UTMify: Token não configurado, ignorando tracking')
+      return
+    }
 
-    // Envia dados para o UTMify
-    await this.utmifyService.trackTransaction(
-      {
-        id: result.transactionId,
+    try {
+      // Extrai parâmetros UTM dos dados adicionais da transação
+      const utmParams = this.extractUTMParams(data.additionalData || {})
+      
+      // Se não há parâmetros UTM, não envia para o UTMify
+      if (Object.keys(utmParams).length === 0) {
+        console.log('UTMify: Sem parâmetros UTM na transação, ignorando tracking')
+        return
+      }
+
+      // Prepara payload para o UTMify
+      const payload = {
+        transaction_id: result.transactionId,
         amount: data.amount,
         currency: data.currency || 'BRL',
-        status: result.status,
-        method: data.method,
-        customer: data.customer,
-        product: data.product,
-      },
-      trackingParams
-    );
+        customer: {
+          email: data.customer.email,
+          name: data.customer.name,
+        },
+        utm_source: utmParams.utm_source,
+        utm_medium: utmParams.utm_medium,
+        utm_campaign: utmParams.utm_campaign,
+        utm_content: utmParams.utm_content,
+        utm_term: utmParams.utm_term,
+        metadata: {
+          payment_method: data.method,
+          product_id: data.productId,
+          ...utmParams.custom_params
+        }
+      }
+
+      // Envia para o UTMify
+      await axios.post(this.apiUrl, payload, {
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 5000, // 5 segundos de timeout
+      })
+
+      console.log(`UTMify: Conversão enviada com sucesso para transação ${result.transactionId}`)
+    } catch (error) {
+      console.error('UTMify: Erro ao enviar conversão:', 
+        error instanceof Error ? error.message : 'Erro desconhecido')
+    }
   }
 
   /**
-   * Extrai parâmetros de tracking do payload da transação
+   * Extrai parâmetros UTM dos dados adicionais da transação
+   * 
+   * @param additionalData Dados adicionais da transação
+   * @returns Objeto com parâmetros UTM
    */
-  private extractTrackingParams(data: TransactionPayload): Record<string, string> {
-    const trackingParams: Record<string, string> = {};
-    
-    // Verifica se há metadata com parâmetros UTM
-    if (data.metadata) {
-      const utmFields = [
-        'utm_source', 
-        'utm_medium', 
-        'utm_campaign', 
-        'utm_content', 
-        'utm_term'
-      ];
-      
-      // Extrai apenas os campos UTM válidos
-      for (const field of utmFields) {
-        if (data.metadata[field]) {
-          trackingParams[field] = String(data.metadata[field]);
-        }
-      }
-      
-      // Adiciona outros parâmetros de tracking que possam existir
-      if (data.metadata.tracking) {
-        Object.entries(data.metadata.tracking).forEach(([key, value]) => {
-          if (typeof value === 'string') {
-            trackingParams[key] = value;
-          }
-        });
+  private extractUTMParams(additionalData: Record<string, any>): Record<string, any> {
+    const utmParams: Record<string, any> = {}
+    const customParams: Record<string, any> = {}
+
+    // Processa todos os campos dos dados adicionais
+    for (const [key, value] of Object.entries(additionalData)) {
+      // Captura parâmetros UTM padrão
+      if (key.startsWith('utm_')) {
+        utmParams[key] = value
+      } 
+      // Outros parâmetros vão para custom_params
+      else {
+        customParams[key] = value
       }
     }
-    
-    return trackingParams;
+
+    // Adiciona custom_params apenas se houver algum
+    if (Object.keys(customParams).length > 0) {
+      utmParams.custom_params = customParams
+    }
+
+    return utmParams
   }
 }

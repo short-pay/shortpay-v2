@@ -2,113 +2,111 @@ import type { GatewayAdapter, TransactionPayload, TransactionResult } from '@/co
 import axios from 'axios'
 
 /**
- * Serviço de integração com UTMify
+ * Serviço para comunicação com a API UTMify
  * 
- * Responsável por enviar dados de tracking para a plataforma UTMify
- * após a criação bem-sucedida de uma transação.
+ * Esta classe implementa a comunicação com a API UTMify para
+ * rastreamento de conversões e atribuição de campanhas.
  */
 export class UTMifyService {
+  private readonly token: string
+  private readonly apiUrl: string
+
   constructor(
-    private config: {
-      apiToken: string;
-      endpoint?: string;
+    config: {
+      token: string;
+      apiUrl?: string;
     }
-  ) {}
+  ) {
+    this.token = config.token
+    this.apiUrl = config.apiUrl || 'https://api.utmify.com/v1/conversions'
+  }
 
   /**
-   * Envia dados de uma transação para o UTMify
+   * Envia dados de conversão para o UTMify
    * 
-   * @param transaction Dados da transação
-   * @param trackingParams Parâmetros de tracking (UTM)
-   * @returns Resultado do envio
+   * @param data Dados da conversão
+   * @returns Resultado da operação
    */
-  async trackTransaction(
-    transaction: {
-      id: string;
+  async sendConversion(
+    data: {
+      transactionId: string;
       amount: number;
       currency: string;
-      status: string;
-      method: string;
-      customer?: {
-        name?: string;
+      customer: {
         email?: string;
-        document?: string;
-        phone?: string;
+        name: string;
       };
-      product?: {
-        id?: string;
-        name?: string;
-        price?: number;
-      };
-    },
-    trackingParams: {
-      utm_source?: string;
-      utm_medium?: string;
-      utm_campaign?: string;
-      utm_content?: string;
-      utm_term?: string;
-      [key: string]: string | undefined;
+      utmParams: Record<string, any>;
+      additionalData?: Record<string, any>;
     }
   ): Promise<{ success: boolean; message?: string }> {
-    // Se não houver token configurado, retorna sem erro mas não envia
-    if (!this.config.apiToken) {
-      console.log('UTMify: Nenhum token configurado, ignorando tracking');
-      return { success: false, message: 'No API token configured' };
-    }
-
-    const endpoint = this.config.endpoint || 'https://api.utmify.com.br/api-credentials/orders';
-    
     try {
+      // Prepara payload para o UTMify
       const payload = {
-        body: {
-          id: transaction.id,
-          status: this.mapTransactionStatus(transaction.status),
-          payment_method: transaction.method,
-          currency: transaction.currency,
-          value: transaction.amount,
-        },
-        customer: transaction.customer ? {
-          name: transaction.customer.name,
-          email: transaction.customer.email,
-          document: transaction.customer.document,
-          phone: transaction.customer.phone,
-        } : undefined,
-        product: transaction.product ? {
-          id: transaction.product.id,
-          name: transaction.product.name,
-          price: transaction.product.price,
-        } : undefined,
-        trackingParameters: trackingParams
-      };
+        transaction_id: data.transactionId,
+        amount: data.amount,
+        currency: data.currency,
+        customer: data.customer,
+        utm_source: data.utmParams.utm_source,
+        utm_medium: data.utmParams.utm_medium,
+        utm_campaign: data.utmParams.utm_campaign,
+        utm_content: data.utmParams.utm_content,
+        utm_term: data.utmParams.utm_term,
+        metadata: data.additionalData || {}
+      }
 
-      const response = await axios.post(endpoint, payload, {
+      // Envia para o UTMify
+      const response = await axios.post(this.apiUrl, payload, {
         headers: {
-          'x-api-token': this.config.apiToken,
+          'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
-      });
+        timeout: 5000, // 5 segundos de timeout
+      })
 
-      console.log('UTMify: Tracking enviado com sucesso', response.data);
-      return { success: true };
+      return {
+        success: true,
+        message: `Conversão enviada com sucesso: ${response.data.id || 'ID não retornado'}`
+      }
     } catch (error) {
-      console.error('UTMify: Erro ao enviar tracking', error);
-      return { 
-        success: false, 
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+      
+      console.error('UTMify: Erro ao enviar conversão:', errorMessage)
+      
+      return {
+        success: false,
+        message: `Erro ao enviar conversão: ${errorMessage}`
+      }
     }
   }
 
   /**
-   * Mapeia os status de transação do sistema para os status aceitos pelo UTMify
+   * Extrai parâmetros UTM dos dados adicionais
+   * 
+   * @param additionalData Dados adicionais
+   * @returns Objeto com parâmetros UTM
    */
-  private mapTransactionStatus(status: string): string {
-    const statusMap: Record<string, string> = {
-      'pending': 'pending',
-      'paid': 'paid',
-      'failed': 'failed',
-    };
+  extractUTMParams(additionalData: Record<string, any>): Record<string, any> {
+    const utmParams: Record<string, any> = {}
+    const customParams: Record<string, any> = {}
 
-    return statusMap[status] || 'pending';
+    // Processa todos os campos dos dados adicionais
+    for (const [key, value] of Object.entries(additionalData || {})) {
+      // Captura parâmetros UTM padrão
+      if (key.startsWith('utm_')) {
+        utmParams[key] = value
+      } 
+      // Outros parâmetros vão para custom_params
+      else {
+        customParams[key] = value
+      }
+    }
+
+    // Adiciona custom_params apenas se houver algum
+    if (Object.keys(customParams).length > 0) {
+      utmParams.custom_params = customParams
+    }
+
+    return utmParams
   }
 }
